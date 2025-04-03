@@ -15,7 +15,6 @@ import { TimezoneService } from './timezone/timezone.service';
 import { CoordinatesController } from './coordinates/coordinates.controller';
 import { LoggerMiddleware } from './logger/logger.middleware';
 import { PrayerTimesModule } from '@/prayer-times/prayer-times.module';
-import { ResponseInterceptor } from '@/response/response.interceptor';
 import { HealthModule } from './health/health.module';
 
 @Module({
@@ -76,10 +75,6 @@ import { HealthModule } from './health/health.module';
     },
     TimezoneService,
     CoordinatesService,
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: ResponseInterceptor,
-    },
   ],
 })
 export class AppModule implements NestModule {
