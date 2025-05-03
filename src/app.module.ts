@@ -17,6 +17,7 @@ import { LoggerMiddleware } from './logger/logger.middleware';
 import { PrayerTimesModule } from '@/prayer-times/prayer-times.module';
 import { ResponseInterceptor } from '@/response/response.interceptor';
 import { HealthModule } from './health/health.module';
+import { ReverseGeocodeModule } from './reverse-geocode/reverse-geocode.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { HealthModule } from './health/health.module';
     }),
     PrayerTimesModule,
     HealthModule,
+    ReverseGeocodeModule,
   ],
   controllers: [
     AppController,
