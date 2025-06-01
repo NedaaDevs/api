@@ -1,12 +1,15 @@
-import { IsOptional, IsNumber } from 'class-validator';
+import { IsOptional, IsInt } from 'class-validator';
 import { LocationDto } from '@/prayer-times/dtos/location.dto';
+import { Type } from 'class-transformer';
 
 export class PrayerTimesQueryDto extends LocationDto {
   @IsOptional()
-  @IsNumber()
+  @IsInt()
+  @Type(() => Number)
   method?: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsInt()
+  @Type(() => Number)
   providerId?: number;
 }
