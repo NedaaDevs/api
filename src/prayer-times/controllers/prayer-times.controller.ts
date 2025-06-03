@@ -26,11 +26,13 @@ export class PrayerTimesController {
   async getPrayerTimes(
     @Query() query: PrayerTimesQueryDto,
   ): Promise<PrayerTimesResponse> {
-    const { lat, long, method, providerId } = query;
+    const { lat, long, year, month, method, providerId } = query;
 
     return this.prayerTimesService.getPrayerTimes(
       lat,
       long,
+      year,
+      month,
       method,
       providerId,
     );

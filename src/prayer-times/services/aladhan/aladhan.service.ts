@@ -17,6 +17,8 @@ export class AladhanService {
   async getPrayerTimes(
     latitude: number,
     longitude: number,
+    year: number,
+    month: number,
     method?: number,
   ): Promise<PrayerTimesResponse> {
     const response = await firstValueFrom(
@@ -24,6 +26,8 @@ export class AladhanService {
         params: {
           latitude,
           longitude,
+          year,
+          month,
           method: method,
           iso8601: true,
           annual: true,

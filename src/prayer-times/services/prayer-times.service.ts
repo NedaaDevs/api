@@ -19,6 +19,8 @@ export class PrayerTimesService {
   async getPrayerTimes(
     latitude: number,
     longitude: number,
+    year: number,
+    month: number,
     method?: number,
     providerId?: number,
   ): Promise<PrayerTimesResponse> {
@@ -31,6 +33,12 @@ export class PrayerTimesService {
       provider.id,
     );
 
-    return providerService.getPrayerTimes(latitude, longitude, method);
+    return providerService.getPrayerTimes(
+      latitude,
+      longitude,
+      year,
+      month,
+      method,
+    );
   }
 }

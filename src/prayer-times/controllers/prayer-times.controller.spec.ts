@@ -77,6 +77,8 @@ describe('PrayerTimesController', () => {
       const result = await controller.getPrayerTimes({
         lat: 51.5074,
         long: -0.1278,
+        year: 2025,
+        month: 7,
         method: 2,
         providerId: 1,
       });
@@ -85,6 +87,8 @@ describe('PrayerTimesController', () => {
       expect(prayerTimesService.getPrayerTimes).toHaveBeenCalledWith(
         51.5074,
         -0.1278,
+        2025,
+        7,
         2,
         1,
       );
