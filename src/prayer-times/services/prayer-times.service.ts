@@ -19,10 +19,8 @@ export class PrayerTimesService {
   async getPrayerTimes(
     latitude: number,
     longitude: number,
-    year: number,
-    month: number,
-    method?: number,
     providerId?: number,
+    providerParams?: any,
   ): Promise<PrayerTimesResponse> {
     //  Get the selected provider (default to the first provider if none is specified)
     const provider =
@@ -33,12 +31,6 @@ export class PrayerTimesService {
       provider.id,
     );
 
-    return providerService.getPrayerTimes(
-      latitude,
-      longitude,
-      year,
-      month,
-      method,
-    );
+    return providerService.getPrayerTimes(latitude, longitude, providerParams);
   }
 }

@@ -17,21 +17,49 @@ export class AladhanService {
   async getPrayerTimes(
     latitude: number,
     longitude: number,
-    year: number,
-    month: number,
-    method?: number,
+    params?: any,
   ): Promise<PrayerTimesResponse> {
+    // Build API parameters
+    const apiParams: any = {
+      latitude,
+      longitude,
+      iso8601: true,
+      annual: true,
+    };
+
+    // Add optional parameters if provided
+    if (params?.method !== undefined) {
+      apiParams.method = params.method;
+    }
+    if (params?.school !== undefined) {
+      apiParams.school = params.school;
+    }
+    if (params?.midnightMode !== undefined) {
+      apiParams.midnightMode = params.midnightMode;
+    }
+    if (params?.shafaq) {
+      apiParams.shafaq = params.shafaq;
+    }
+    if (params?.latitudeAdjustment !== undefined) {
+      apiParams.latitudeAdjustment = params.latitudeAdjustment;
+    }
+    if (params?.tune) {
+      apiParams.tune = params.tune;
+    }
+    if (params?.methodSettings) {
+      apiParams.methodSettings = params.methodSettings;
+    }
+
+    if (params?.year !== undefined) {
+      apiParams.year = params.year;
+    }
+    if (params?.month !== undefined) {
+      apiParams.month = params.month;
+    }
+
     const response = await firstValueFrom(
       this.http.get(this.apiUrl, {
-        params: {
-          latitude,
-          longitude,
-          year,
-          month,
-          method: method,
-          iso8601: true,
-          annual: true,
-        },
+        params: apiParams,
       }),
     );
 

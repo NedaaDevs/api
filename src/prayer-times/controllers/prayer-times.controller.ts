@@ -9,7 +9,7 @@ import { PrayerTimesProvider } from '@/prayer-times/interfaces/provider.interfac
 import { PrayerTimesResponse } from '@/prayer-times/interfaces/prayer-times-response.interface';
 
 // DTOs
-import { PrayerTimesQueryDto } from '@/prayer-times/dtos/prayer-times.dto';
+import { AladhanQueryDto } from '@/prayer-times/dtos/aladhan-query.dto';
 
 // Decorators
 import { ResponseMessage } from '@/response-message/response-message.decorator';
@@ -24,17 +24,15 @@ export class PrayerTimesController {
   @Get('/')
   @ResponseMessage('Prayer times retrieved successfully')
   async getPrayerTimes(
-    @Query() query: PrayerTimesQueryDto,
+    @Query() query: AladhanQueryDto, // Use provider-specific DTO for now, will make dynamic later
   ): Promise<PrayerTimesResponse> {
-    const { lat, long, year, month, method, providerId } = query;
+    const { lat, long, providerId, ...providerParams } = query;
 
     return this.prayerTimesService.getPrayerTimes(
       lat,
       long,
-      year,
-      month,
-      method,
       providerId,
+      providerParams,
     );
   }
 
