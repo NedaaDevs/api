@@ -87,11 +87,8 @@ describe('PrayerTimesController', () => {
       expect(prayerTimesService.getPrayerTimes).toHaveBeenCalledWith(
         51.5074,
         -0.1278,
-        2025,
-        7,
-        2,
         1,
-        { method: 2 },
+        { method: 2, year: 2025, month: 7 },
       );
     });
 

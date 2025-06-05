@@ -1,4 +1,4 @@
-import { IsOptional, IsInt, IsNumber, IsNotEmpty } from 'class-validator';
+import { IsOptional, IsInt } from 'class-validator';
 import { LocationDto } from '@/prayer-times/dtos/location.dto';
 import { Type } from 'class-transformer';
 
