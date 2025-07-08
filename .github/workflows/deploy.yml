@@ -3,7 +3,7 @@ name: Deploy Docker Image
 on:
   push:
     branches:
-      - "**"
+      - 'prod'
 
 env:
   REGISTRY: ghcr.io
@@ -47,3 +47,8 @@ jobs:
           push: ${{ github.ref == 'refs/heads/master' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+
+      - name: Trigger Deployment Update
+        run: |
+          curl -H "Authorization: Bearer ${{ secrets.DEPLOY_TOKEN }}" ${{ secrets.DEPLOY_ENDPOINT }}
