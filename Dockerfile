@@ -2,7 +2,7 @@
 FROM node:22-alpine AS base
 
 # Install security updates and dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init && \
+RUN apk add --no-cache dumb-init lnav && \
     apk upgrade
 
 # Enable corepack and set Yarn version
