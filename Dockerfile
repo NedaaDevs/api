@@ -1,7 +1,7 @@
 # Use Node.js LTS version
 FROM node:22-alpine AS base
 
-# Install security updates and dumb-init for proper signal handling
+# Install security updates, dumb-init for proper signal handling, and lnav for log analysis
 RUN apk add --no-cache dumb-init lnav && \
     apk upgrade
 
