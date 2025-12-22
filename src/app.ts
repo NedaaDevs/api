@@ -3,10 +3,17 @@ import { cors } from "@elysiajs/cors";
 import { openapi } from "@elysiajs/openapi";
 
 
+// Modules
+import { healthModule } from "@/modules/health";
+
+
+
 
 export const app = new Elysia()
     .use(cors())
     .use(openapi({
+        enabled: true,
+        path: '/docs',
         documentation: {
             info: {
                 title: "Nedaa API",
@@ -14,6 +21,7 @@ export const app = new Elysia()
             }
         }
     }))
-  
+  .group('/v3', app => app.use(healthModule))
+
 
 export type App = typeof app;
