@@ -16,6 +16,12 @@ export const app = new Elysia()
 					title: "Nedaa API",
 					version: "1.0.0",
 				},
+				tags: [
+					{
+						name: "Health",
+						description: "Health check endpoint",
+					},
+				],
 			},
 		}),
 	)
