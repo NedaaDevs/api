@@ -13,6 +13,9 @@ const healthSchema = t.Object({
 export const healthModule = new Elysia({
 	name: "health",
 	prefix: "/health",
+	detail: {
+		tags: ["Health"],
+	},
 }).get("/", getHealth, {
 	response: healthSchema,
 });
