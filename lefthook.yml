@@ -21,5 +21,6 @@ pre-commit:
   parallel: true
   jobs:
     - name: biome check staged files
-      glob: "*.{js,ts,jsx,tsx,json}"
-      run: bunx biome check --staged --write
+      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+      run: bunx @biomejs/biome check --write --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
+      stage_fixed: true
