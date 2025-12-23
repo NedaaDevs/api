@@ -10,6 +10,34 @@ if (!isDev && !existsSync("./logs")) {
 	mkdirSync("./logs", { recursive: true });
 }
 
+const devTrace = new Elysia({
+	name: "devTrace",
+}).trace(
+	{ as: "global" },
+	({ context: { request }, onRequest, onHandle, onAfterResponse }) => {
+		let path: string;
+		let method: string;
+
+		onRequest(() => {
+			path = new URL(request.url).pathname;
+			method = request.method;
+			console.log(`→ ${method} ${path}`);
+		});
+
+		onHandle(({ onStop }) => {
+			onStop(({ elapsed }) => {
+				console.log(`  ⚡ handle: ${elapsed.toFixed(2)}ms`);
+			});
+		});
+
+		onAfterResponse(({ onStop }) => {
+			onStop(({ elapsed }) => {
+				console.log(`← ${method} ${path} (${elapsed.toFixed(2)}ms)`);
+			});
+		});
+	},
+);
+
 export const logger = new Elysia({
 	name: "logger",
 })
@@ -32,28 +60,4 @@ export const logger = new Elysia({
 			autoLogging: true,
 		}),
 	)
-	.trace(
-		{ as: "global" },
-		({ context: { request }, onRequest, onHandle, onAfterResponse }) => {
-			let path: string;
-			let method: string;
-
-			onRequest(() => {
-				path = new URL(request.url).pathname;
-				method = request.method;
-				console.log(`→ ${method} ${path}`);
-			});
-
-			onHandle(({ onStop }) => {
-				onStop(({ elapsed }) => {
-					console.log(`  ⚡ handle: ${elapsed.toFixed(2)}ms`);
-				});
-			});
-
-			onAfterResponse(({ onStop }) => {
-				onStop(({ elapsed }) => {
-					console.log(`← ${method} ${path} (${elapsed.toFixed(2)}ms)`);
-				});
-			});
-		},
-	);
+	.use(isDev ? devTrace : (app) => app);
