@@ -3,7 +3,17 @@ import { AppError, CODES } from "@/shared/errors";
 
 export const errorHandler = new Elysia({
 	name: "errorHandler",
-}).onError({ as: "global" }, ({ error, set }) => {
+}).onError({ as: "global" }, ({ error, code, set }) => {
+	// Override Elysia 404
+	if (code === "NOT_FOUND") {
+		set.status = 404;
+		return {
+			error: "Route Not Found",
+			code: CODES.ROUTE_NOT_FOUND,
+		};
+	}
+
+	// AppError
 	if (error instanceof AppError) {
 		set.status = error.statusCode;
 		return {
