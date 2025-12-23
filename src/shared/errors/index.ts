@@ -24,4 +24,10 @@ export class ValidationError extends AppError {
 	}
 }
 
+export class ProviderError extends AppError {
+	constructor(message: string, code: ErrorCode = CODES.PROVIDER_ERROR) {
+		super(message, 500, code);
+	}
+}
+
 export { CODES, type ErrorCode };
