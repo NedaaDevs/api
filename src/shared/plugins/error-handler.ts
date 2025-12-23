@@ -13,6 +13,12 @@ export const errorHandler = new Elysia({
 		};
 	}
 
+	// Validation
+	if (code === "VALIDATION") {
+		// Let Elysia handle it
+		return;
+	}
+
 	// AppError
 	if (error instanceof AppError) {
 		set.status = error.statusCode;
