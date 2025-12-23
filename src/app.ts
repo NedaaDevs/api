@@ -4,6 +4,7 @@ import { Elysia } from "elysia";
 
 // Modules
 import { healthModule } from "@/modules/health";
+import { prayerModule } from "@/modules/prayers";
 
 // Plugins
 import { errorHandler } from "@/shared/plugins/error-handler";
@@ -31,6 +32,6 @@ export const app = new Elysia()
 		}),
 	)
 	.use(errorHandler)
-	.group("/v3", (app) => app.use(healthModule));
+	.group("/v3", (app) => app.use(healthModule).use(prayerModule));
 
 export type App = typeof app;
