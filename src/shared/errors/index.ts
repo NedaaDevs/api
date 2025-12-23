@@ -12,6 +12,12 @@ export class AppError extends Error {
 	}
 }
 
+export class NotFoundError extends AppError {
+	constructor(message: string, code: ErrorCode = CODES.ROUTE_NOT_FOUND) {
+		super(message, 404, code);
+	}
+}
+
 export class ValidationError extends AppError {
 	constructor(message: string, code: ErrorCode = CODES.VALIDATION_ERROR) {
 		super(message, 400, code);
