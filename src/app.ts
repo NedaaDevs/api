@@ -7,9 +7,11 @@ import { healthModule } from "@/modules/health";
 
 // Plugins
 import { errorHandler } from "@/shared/plugins/error-handler";
+import { logger } from "@/shared/plugins/logger";
 
 export const app = new Elysia()
 	.use(cors())
+	.use(logger)
 	.use(
 		openapi({
 			enabled: true,
