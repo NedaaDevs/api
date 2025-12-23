@@ -10,11 +10,10 @@ const EnvSchema = t.Object({
 		default: 3004,
 		description: "Port number",
 	}),
-	ALADHAN_API_KEY: t.Optional(
-		t.String({
-			description: "Aladhan API key",
-		}),
-	),
+	ALADHAN_API_URL: t.String({
+		description: "Aladhan API URL",
+	}),
+
 	BIGDATACLOUD_API_KEY: t.Optional(
 		t.String({
 			description: "BigDataCloud API key",
