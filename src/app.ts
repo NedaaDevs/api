@@ -5,6 +5,9 @@ import { Elysia } from "elysia";
 // Modules
 import { healthModule } from "@/modules/health";
 
+// Plugins
+import { errorHandler } from "@/shared/plugins/error-handler";
+
 export const app = new Elysia()
 	.use(cors())
 	.use(
@@ -25,6 +28,7 @@ export const app = new Elysia()
 			},
 		}),
 	)
+	.use(errorHandler)
 	.group("/v3", (app) => app.use(healthModule));
 
 export type App = typeof app;
