@@ -9,11 +9,11 @@ export const PrayerTimesQuery = t.Object({
 	lng: t.Number({ minimum: -180, maximum: 180 }),
 	date: t.Optional(t.String({ format: "date" })),
 	provider: t.Optional(t.String()),
-	options: t.Optional(t.Record(t.String(), t.Union([t.String(), t.Number()]))),
+	options: t.Optional(t.Any()),
 });
 
 // Single prayer time
-const PrayerTimeSchema = t.Object({
+export const PrayerTimeSchema = t.Object({
 	name: t.String(),
 	time: t.String(),
 });
