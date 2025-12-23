@@ -24,3 +24,6 @@ jobs:
 
       - name: Lint
         run: biome ci
+
+      - name: Test
+        run: bun test
