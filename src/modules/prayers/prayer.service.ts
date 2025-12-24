@@ -20,23 +20,38 @@ export abstract class PrayersService {
 	static async getPrayerTimes(
 		params: PrayerTimesParams,
 	): Promise<PrayerTimesResult> {
+		// Cache key WITHOUT month - always cache full year
 		const cacheKey = createCacheKey("prayers", params.lat, params.lng, {
 			provider: params.provider ?? "aladhan",
+			year: params.year ?? new Date().getFullYear(),
 			...params.options,
 		});
 
-		// Check cache first
-		const cached = prayerTimesCache.get(cacheKey);
-		if (cached) return cached as PrayerTimesResult; // Hit return
+		let result = prayerTimesCache.get(cacheKey) as
+			| PrayerTimesResult
+			| undefined;
 
-		const adapter = params.provider
-			? getAdapter(params.provider)
-			: getDefaultAdapter();
+		if (!result) {
+			const adapter = params.provider
+				? getAdapter(params.provider)
+				: getDefaultAdapter();
 
-		const result = await adapter.getPrayerTimes(params);
+			result = await adapter.getPrayerTimes(params);
+			prayerTimesCache.set(cacheKey, result);
+		}
 
-		// Cache result
-		prayerTimesCache.set(cacheKey, result);
+		// Filter AFTER cache if month specified
+		if (params.month) {
+			const startMonth = params.month;
+			return {
+				...result,
+				months: Object.fromEntries(
+					Object.entries(result.months).filter(
+						([m]) => Number(m) >= startMonth,
+					),
+				),
+			};
+		}
 
 		return result;
 	}

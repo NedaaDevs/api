@@ -24,22 +24,40 @@ export interface AdapterMeta {
 export interface PrayerTimesParams {
 	lat: number;
 	lng: number;
-	date: string;
+	year?: number;
+	month?: number;
 	provider?: string;
 	options?: Record<string, unknown>;
 }
 
-export interface PrayerTime {
-	name: string;
-	time: string;
+export interface DayTimings {
+	fajr: string;
+	sunrise: string;
+	dhuhr: string;
+	asr: string;
+	sunset: string;
+	maghrib: string;
+	isha: string;
+	imsak: string;
+	midnight: string;
+	firstthird: string;
+	lastthird: string;
+}
+
+export interface DayPrayerTimes {
+	date: string;
+	timings: DayTimings;
+}
+
+export interface MonthlyPrayerTimes {
+	[month: string]: DayPrayerTimes[];
 }
 
 export interface PrayerTimesResult {
-	date: string;
-	coordinates: { lat: number; lng: number };
 	timezone: string;
+	coordinates: { lat: number; lng: number };
 	provider: string;
-	prayers: PrayerTime[];
+	months: MonthlyPrayerTimes;
 }
 
 export abstract class PrayerTimesAdapter {

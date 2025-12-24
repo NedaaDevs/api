@@ -21,7 +21,8 @@ export const prayerModule = new Elysia({
 			PrayersService.getPrayerTimes({
 				lat: query.lat,
 				lng: query.lng,
-				date: query.date ?? new Date().toISOString().split("T")[0],
+				year: query.year,
+				month: query.month,
 				provider: query.provider,
 				options: query.options,
 			}),
