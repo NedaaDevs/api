@@ -14,11 +14,13 @@ const EnvSchema = t.Object({
 		description: "Aladhan API URL",
 	}),
 
-	BIGDATACLOUD_API_KEY: t.Optional(
-		t.String({
-			description: "BigDataCloud API key",
-		}),
-	),
+	BDC_API_URL: t.String({
+		default: "https://api-bdc.net",
+		description: "BigDataCloud API base URL",
+	}),
+	BDC_API_KEY: t.String({
+		description: "BigDataCloud API key",
+	}),
 });
 
 export type Env = Static<typeof EnvSchema>;
