@@ -1,29 +1,21 @@
-import { readdir } from "node:fs/promises";
-import { join } from "node:path";
 import type {
 	AdapterMeta,
 	PrayerTimesAdapter,
 } from "@/modules/prayers/adapters/base.adapter";
 import { NotFoundError } from "@/shared/errors";
 
+// Auto-discover adapters using glob import
+import adapterModules from "./*.adapter.ts";
+
 const adapters = new Map<string, PrayerTimesAdapter>();
 
+type AdapterModule = { default?: new () => PrayerTimesAdapter };
+
 export const initAdapter = async () => {
-	const adapterDir = import.meta.dir;
-	const files = await readdir(adapterDir);
-
-	const adapterFiles = files.filter(
-		(f) => f.endsWith(".adapter.ts") && f !== "base.adapter.ts",
-	);
-
-	if (!adapterFiles.length) {
-		console.warn("No Adapters found");
-	}
-
-	for (const file of adapterFiles) {
-		const modulePath = join(adapterDir, file);
-		const { default: AdapterClass } = await import(modulePath);
-		const adapter: PrayerTimesAdapter = new AdapterClass();
+	for (const mod of adapterModules as AdapterModule[]) {
+		// Skip base adapter (no default export)
+		if (!mod.default) continue;
+		const adapter = new mod.default();
 		adapters.set(adapter.meta.id, adapter);
 	}
 
