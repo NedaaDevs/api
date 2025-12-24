@@ -3,7 +3,8 @@
 	"version": "1.0.50",
 	"scripts": {
 		"dev": "bun run --watch src/index.ts",
-		"build": "bun build --compile --minify-whitespace --minify-syntax --target bun --outfile server src/index.ts",
+		"build": "bun run build.ts --compile",
+		"build:bundle": "bun run build.ts",
 		"lint": "bunx biome check",
 		"lint:fix": "bunx biome check --write",
 		"format": "bunx biome format --write",
