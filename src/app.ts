@@ -10,6 +10,7 @@ import { prayerModule } from "@/modules/prayers";
 // Plugins
 import { errorHandler } from "@/shared/plugins/error-handler";
 import { logger } from "@/shared/plugins/logger";
+import { globalRateLimit } from "@/shared/plugins/rate-limiter";
 
 export const app = new Elysia()
 	.use(cors())
@@ -33,6 +34,7 @@ export const app = new Elysia()
 		}),
 	)
 	.use(errorHandler)
+	.use(globalRateLimit)
 	.group("/v3", (app) =>
 		app.use(healthModule).use(prayerModule).use(locationsModule),
 	);

@@ -4,6 +4,7 @@ import {
 	ReverseGeocodeResponse,
 } from "@/modules/locations/locations.schemas";
 import { LocationsService } from "@/modules/locations/locations.service";
+import { locationRateLimit } from "@/shared/plugins/rate-limiter";
 
 export const locationsModule = new Elysia({
 	name: "Locations",
@@ -11,11 +12,13 @@ export const locationsModule = new Elysia({
 	detail: {
 		tags: ["Locations"],
 	},
-}).get(
-	"/reverse-geocode",
-	({ query }) => LocationsService.reverseGeocode(query),
-	{
-		response: ReverseGeocodeResponse,
-		query: ReverseGeocodeQuery,
-	},
-);
+})
+	.use(locationRateLimit)
+	.get(
+		"/reverse-geocode",
+		({ query }) => LocationsService.reverseGeocode(query),
+		{
+			response: ReverseGeocodeResponse,
+			query: ReverseGeocodeQuery,
+		},
+	);
