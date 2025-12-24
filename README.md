@@ -1,6 +1,6 @@
 # Nedaa API
 
-[![CI](https://github.com/NedaaDevs/elysia-api/actions/workflows/ci.yml/badge.svg)](https://github.com/NedaaDevs/elysia-api/actions/workflows/ci.yml)
+[![CI](https://github.com/NedaaDevs/api/actions/workflows/ci.yml/badge.svg)](https://github.com/NedaaDevs/api/actions/workflows/ci.yml)
 
 Prayer times API for Nedaa.
 
