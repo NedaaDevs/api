@@ -2,7 +2,7 @@
 	"name": "elysia-api",
 	"version": "1.0.50",
 	"scripts": {
-		"dev": "bun run --watch src/index.ts",
+		"dev": "bun run build.ts --watch",
 		"build": "bun run build.ts --compile",
 		"build:bundle": "bun run build.ts",
 		"lint": "bunx biome check",
