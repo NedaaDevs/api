@@ -11,6 +11,7 @@ const EnvSchema = t.Object({
 		description: "Port number",
 	}),
 	ALADHAN_API_URL: t.String({
+		default: "https://api.aladhan.com",
 		description: "Aladhan API URL",
 	}),
 
