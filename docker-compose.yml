@@ -1,0 +1,9 @@
+services:
+  api:
+    build: .
+    ports:
+      - "${PORT:-3004}:3004"
+    environment:
+      - NODE_ENV=production
+      - ALADHAN_API_URL=${ALADHAN_API_URL}
+    restart: unless-stopped
