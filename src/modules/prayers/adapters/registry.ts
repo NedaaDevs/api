@@ -4,7 +4,7 @@ import type {
 } from "@/modules/prayers/adapters/base.adapter";
 import { NotFoundError } from "@/shared/errors";
 
-// Auto-discover adapters using glob import
+// Auto-discover adapters via glob import (resolved at bundle time)
 import adapterModules from "./*.adapter.ts";
 
 const adapters = new Map<string, PrayerTimesAdapter>();
@@ -13,8 +13,7 @@ type AdapterModule = { default?: new () => PrayerTimesAdapter };
 
 export const initAdapter = async () => {
 	for (const mod of adapterModules as AdapterModule[]) {
-		// Skip base adapter (no default export)
-		if (!mod.default) continue;
+		if (!mod?.default) continue;
 		const adapter = new mod.default();
 		adapters.set(adapter.meta.id, adapter);
 	}
