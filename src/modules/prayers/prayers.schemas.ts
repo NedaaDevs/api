@@ -7,27 +7,42 @@ export const PrayerTimesQuery = t.Object({
 		maximum: 90,
 	}),
 	lng: t.Number({ minimum: -180, maximum: 180 }),
-	date: t.Optional(t.String({ format: "date" })),
+	year: t.Optional(t.Number()),
+	month: t.Optional(t.Number({ minimum: 1, maximum: 12 })),
 	provider: t.Optional(t.String()),
 	options: t.Optional(t.Any()),
 });
 
-// Single prayer time
-export const PrayerTimeSchema = t.Object({
-	name: t.String(),
-	time: t.String(),
+// Day timings
+export const DayTimingsSchema = t.Object({
+	fajr: t.String(),
+	sunrise: t.String(),
+	dhuhr: t.String(),
+	asr: t.String(),
+	sunset: t.String(),
+	maghrib: t.String(),
+	isha: t.String(),
+	imsak: t.String(),
+	midnight: t.String(),
+	firstthird: t.String(),
+	lastthird: t.String(),
 });
 
-// GET /prayers response
-export const PrayerTimesResponse = t.Object({
+// Single day prayer times
+export const DayPrayerTimesSchema = t.Object({
 	date: t.String(),
+	timings: DayTimingsSchema,
+});
+
+// GET /prayers response (annual calendar)
+export const PrayerTimesResponse = t.Object({
+	timezone: t.String(),
 	coordinates: t.Object({
 		lat: t.Number(),
 		lng: t.Number(),
 	}),
-	timezone: t.String(),
 	provider: t.String(),
-	prayers: t.Array(PrayerTimeSchema),
+	months: t.Record(t.String(), t.Array(DayPrayerTimesSchema)),
 });
 
 // Single adapter info
