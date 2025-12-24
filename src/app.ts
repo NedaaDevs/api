@@ -7,13 +7,14 @@ import { helmet } from "elysia-helmet";
 import { healthModule } from "@/modules/health";
 import { locationsModule } from "@/modules/locations";
 import { prayerModule } from "@/modules/prayers";
-
+import { telemetry } from "@/observability/telemetry";
 // Plugins
 import { errorHandler } from "@/shared/plugins/error-handler";
 import { logger } from "@/shared/plugins/logger";
 import { globalRateLimit } from "@/shared/plugins/rate-limiter";
 
 export const app = new Elysia()
+	.use(telemetry)
 	.use(cors())
 	.use(helmet())
 	.use(logger)
