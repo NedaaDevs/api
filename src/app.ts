@@ -1,6 +1,7 @@
 import { cors } from "@elysiajs/cors";
 import { openapi } from "@elysiajs/openapi";
 import { Elysia } from "elysia";
+import { helmet } from "elysia-helmet";
 
 // Modules
 import { healthModule } from "@/modules/health";
@@ -14,6 +15,7 @@ import { globalRateLimit } from "@/shared/plugins/rate-limiter";
 
 export const app = new Elysia()
 	.use(cors())
+	.use(helmet())
 	.use(logger)
 	.use(
 		openapi({
