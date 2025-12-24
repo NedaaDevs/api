@@ -1,7 +1,6 @@
 import { cors } from "@elysiajs/cors";
 import { openapi } from "@elysiajs/openapi";
 import { Elysia } from "elysia";
-import { helmet } from "elysia-helmet";
 
 // Modules
 import { healthModule } from "@/modules/health";
@@ -10,13 +9,14 @@ import { prayerModule } from "@/modules/prayers";
 import { telemetry } from "@/observability/telemetry";
 // Plugins
 import { errorHandler } from "@/shared/plugins/error-handler";
+import { securityHeaders } from "@/shared/plugins/helmet";
 import { logger } from "@/shared/plugins/logger";
 import { globalRateLimit } from "@/shared/plugins/rate-limiter";
 
 export const app = new Elysia()
 	.use(telemetry)
 	.use(cors())
-	.use(helmet())
+	.use(securityHeaders)
 	.use(logger)
 	.use(
 		openapi({

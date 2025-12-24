@@ -1,6 +1,7 @@
 import { env } from "@/config/env";
 import {
 	type AdapterMeta,
+	type MonthlyPrayerTimes,
 	PrayerTimesAdapter,
 	type PrayerTimesParams,
 	type PrayerTimesResult,
@@ -82,15 +83,17 @@ export default class AladhanAdapter extends PrayerTimesAdapter {
 
 	async getPrayerTimes(params: PrayerTimesParams): Promise<PrayerTimesResult> {
 		const options = this.validateOptions(params.options);
-
-		const response = await this.fetch<AladhanResponse>(
-			`${env.ALADHAN_API_URL}/v1/timings/${params.date}`,
+		const response = await this.fetch<AladhanCalendarResponse>(
+			`${env.ALADHAN_API_URL}/v1/calendar`,
 			{
 				latitude: params.lat,
 				longitude: params.lng,
 				iso8601: true,
+				annual: true,
 				method: options.method ?? 2,
 				school: options.school ?? 0,
+				...(params.year && { year: params.year }),
+				...(params.month && { month: params.month }),
 				...(options.midnightMode !== undefined && {
 					midnightMode: options.midnightMode,
 				}),
@@ -170,46 +173,65 @@ export default class AladhanAdapter extends PrayerTimesAdapter {
 	}
 
 	private mapToInternal(
-		response: AladhanResponse,
+		response: AladhanCalendarResponse,
 		params: PrayerTimesParams,
 	): PrayerTimesResult {
-		const timings = response.data.timings;
+		const data = response.data;
+		const firstMonth = Object.keys(data)[0];
+		const timezone = data[firstMonth][0].meta.timezone;
+		const months: MonthlyPrayerTimes = {};
+		for (const [month, days] of Object.entries(data)) {
+			months[month] = days.map((day) => ({
+				date: String(day.date.timestamp),
+				timings: {
+					fajr: day.timings.Fajr,
+					sunrise: day.timings.Sunrise,
+					dhuhr: day.timings.Dhuhr,
+					asr: day.timings.Asr,
+					sunset: day.timings.Sunset,
+					maghrib: day.timings.Maghrib,
+					isha: day.timings.Isha,
+					imsak: day.timings.Imsak,
+					midnight: day.timings.Midnight,
+					firstthird: day.timings.Firstthird,
+					lastthird: day.timings.Lastthird,
+				},
+			}));
+		}
+
 		return {
-			date: params.date,
+			timezone,
 			coordinates: { lat: params.lat, lng: params.lng },
-			timezone: response.data.meta.timezone,
 			provider: this.meta.id,
-			prayers: [
-				{ name: "fajr", time: timings.Fajr },
-				{ name: "sunrise", time: timings.Sunrise },
-				{ name: "dhuhr", time: timings.Dhuhr },
-				{ name: "asr", time: timings.Asr },
-				{ name: "maghrib", time: timings.Maghrib },
-				{ name: "isha", time: timings.Isha },
-			],
+			months,
 		};
 	}
 }
 
-interface AladhanResponse {
-	data: {
-		timings: {
-			Fajr: string;
-			Sunrise: string;
-			Dhuhr: string;
-			Asr: string;
-			Maghrib: string;
-			Isha: string;
+interface AladhanDayData {
+	timings: {
+		Fajr: string;
+		Sunrise: string;
+		Dhuhr: string;
+		Asr: string;
+		Sunset: string;
+		Maghrib: string;
+		Isha: string;
+		Imsak: string;
+		Midnight: string;
+		Firstthird: string;
+		Lastthird: string;
+	};
+	date: {
+		timestamp: number;
+	};
+	meta: {
+		timezone: string;
+	};
+}
 
-			// Other
-			Sunset: string;
-			Imsak: string;
-			Midnight: string;
-			Firstthird: string;
-			Lastthird: string;
-		};
-		meta: {
-			timezone: string;
-		};
+interface AladhanCalendarResponse {
+	data: {
+		[month: string]: AladhanDayData[];
 	};
 }
