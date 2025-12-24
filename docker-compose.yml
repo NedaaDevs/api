@@ -6,4 +6,16 @@ services:
     environment:
       - NODE_ENV=production
       - ALADHAN_API_URL=${ALADHAN_API_URL}
+      - BDC_API_URL=${BDC_API_URL}
+      - BDC_API_KEY=${BDC_API_KEY}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
+    restart: unless-stopped
+    depends_on:
+      - jaeger
+
+  jaeger:
+    image: jaegertracing/jaeger:latest
+    ports:
+      - "127.0.0.1:16686:16686"  # UI (localhost only)
+      - "4318:4318"              # OTLP HTTP (internal)
     restart: unless-stopped
