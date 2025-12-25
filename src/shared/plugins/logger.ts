@@ -1,14 +1,9 @@
-import { existsSync, mkdirSync } from "node:fs";
 import { pino, logger as pinoLogger } from "@bogeychan/elysia-logger";
 import { Elysia } from "elysia";
 
 import { env } from "@/config/env";
 
 const isDev = env.NODE_ENV === "development";
-
-if (!isDev && !existsSync("./logs")) {
-	mkdirSync("./logs", { recursive: true });
-}
 
 const devTrace = new Elysia({
 	name: "devTrace",
@@ -52,10 +47,7 @@ export const logger = new Elysia({
 						},
 					}
 				: {
-						stream: pino.multistream([
-							process.stdout,
-							pino.destination("./logs/app.log"),
-						]),
+						stream: pino.multistream([{ stream: process.stdout }]),
 					}),
 			autoLogging: true,
 		}),
