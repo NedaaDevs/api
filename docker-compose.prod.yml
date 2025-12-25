@@ -5,8 +5,6 @@ services:
       - "3004:3004"
     environment:
       - NODE_ENV=production
-      - ALADHAN_API_URL=${ALADHAN_API_URL}
-      - BDC_API_URL=${BDC_API_URL}
       - BDC_API_KEY=${BDC_API_KEY}
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-}
     restart: unless-stopped
