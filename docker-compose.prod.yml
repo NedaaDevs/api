@@ -1,7 +1,5 @@
 services:
   nedaa-api-new:
-    image: ghcr.io/nedaadevs/api:798640d
-  nedaa-api:
     image: ghcr.io/nedaadevs/api:latest
     ports:
       - "3004:3004"
@@ -10,6 +8,7 @@ services:
       - BDC_API_KEY=${BDC_API_KEY}
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-}
     restart: unless-stopped
+    pull_policy: always
     # healthcheck:
     #   test: ["CMD", "wget", "-q", "--spider", "http://localhost:3004/v3/health"]
     #   interval: 30s
