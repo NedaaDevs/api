@@ -1,5 +1,5 @@
 services:
-  nedaa-api:
+  nedaa-api-new:
     image: ghcr.io/nedaadevs/api:798640d
     ports:
       - "3004:3004"
