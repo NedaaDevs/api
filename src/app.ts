@@ -3,6 +3,7 @@ import { openapi } from "@elysiajs/openapi";
 import { Elysia } from "elysia";
 
 // Modules
+import { athkarModule } from "@/modules/athkar";
 import { healthModule } from "@/modules/health";
 import { locationsModule } from "@/modules/locations";
 import { prayerModule } from "@/modules/prayers";
@@ -39,7 +40,11 @@ export const app = new Elysia()
 	.use(errorHandler)
 	.use(globalRateLimit)
 	.group("/v3", (app) =>
-		app.use(healthModule).use(prayerModule).use(locationsModule),
+		app
+			.use(athkarModule)
+			.use(healthModule)
+			.use(prayerModule)
+			.use(locationsModule),
 	);
 
 export type App = typeof app;
