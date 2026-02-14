@@ -22,6 +22,10 @@ const EnvSchema = t.Object({
 	BDC_API_KEY: t.String({
 		description: "BigDataCloud API key",
 	}),
+	CDN_URL: t.String({
+		default: "https://cdn.nedaa.dev",
+		description: "CDN base URL for static assets",
+	}),
 });
 
 export type Env = Static<typeof EnvSchema>;
