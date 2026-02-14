@@ -1,3 +1,4 @@
 export const NOT_FOUND = {
 	ROUTE_NOT_FOUND: 40400,
+	RESOURCE_NOT_FOUND: 40401,
 } as const;

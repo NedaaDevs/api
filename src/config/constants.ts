@@ -12,4 +12,5 @@ export const RATE_LIMIT = {
 export const CACHE_TTL = {
 	PRAYER_TIMES: 24 * 60 * 60 * 1000, // 24 hours,
 	LOCATION: 7 * 24 * 60 * 60 * 1000, // 7 days
+	ATHKAR_MANIFEST: 24 * 60 * 60 * 1000, // 24 hours
 } as const;
