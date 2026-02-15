@@ -26,6 +26,9 @@ const EnvSchema = t.Object({
 		default: "https://cdn.nedaa.dev",
 		description: "CDN base URL for static assets",
 	}),
+	ADMIN_API_KEY: t.String({
+		description: "Secret key for admin endpoints (cache clear, etc.)",
+	}),
 });
 
 export type Env = Static<typeof EnvSchema>;
