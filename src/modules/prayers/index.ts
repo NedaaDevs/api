@@ -17,15 +17,17 @@ export const prayerModule = new Elysia({
 })
 	.get(
 		"/",
-		({ query }) =>
-			PrayersService.getPrayerTimes({
-				lat: query.lat,
-				lng: query.lng,
-				year: query.year,
-				month: query.month,
-				provider: query.provider,
-				options: query.options,
-			}),
+		({ query }) => {
+			const { lat, lng, year, month, provider, ...options } = query;
+			return PrayersService.getPrayerTimes({
+				lat,
+				lng,
+				year,
+				month,
+				provider,
+				options: Object.keys(options).length ? options : undefined,
+			});
+		},
 		{
 			query: PrayerTimesQuery,
 			response: PrayerTimesResponse,

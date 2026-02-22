@@ -115,7 +115,22 @@ export default class AladhanAdapter extends PrayerTimesAdapter {
 	}
 
 	protected validateOptions(raw?: Record<string, unknown>): AladhanOptions {
-		const opts = (raw ?? {}) as AladhanOptions;
+		const r = raw ?? {};
+		// Coerce numeric fields (query params arrive as strings)
+		const opts: AladhanOptions = {
+			method: r.method !== undefined ? Number(r.method) : undefined,
+			school: r.school !== undefined ? Number(r.school) : undefined,
+			midnightMode:
+				r.midnightMode !== undefined ? Number(r.midnightMode) : undefined,
+			shafaq: r.shafaq as AladhanOptions["shafaq"],
+			latitudeAdjustmentMethod:
+				r.latitudeAdjustmentMethod !== undefined
+					? Number(r.latitudeAdjustmentMethod)
+					: undefined,
+			tune: r.tune as string | undefined,
+			adjustment: r.adjustment !== undefined ? Number(r.adjustment) : undefined,
+			timezonestring: r.timezonestring as string | undefined,
+		};
 
 		if (
 			opts.method !== undefined &&

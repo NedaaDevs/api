@@ -1,6 +1,10 @@
-import { describe, expect, test } from "bun:test";
+import { beforeEach, describe, expect, test } from "bun:test";
 
-import { bucketCoordinates, createCacheKey } from "@/shared/services/cache";
+import {
+	bucketCoordinates,
+	CacheService,
+	createCacheKey,
+} from "@/shared/services/cache";
 
 describe("bucketCoordinates", () => {
 	test("rounds to 2 decimal places", () => {
@@ -23,9 +27,11 @@ describe("bucketCoordinates", () => {
 });
 
 describe("createCacheKey", () => {
-	test("creates key without params (no bucketing)", () => {
+	const cache = new CacheService<string>({ maxSize: 10, ttl: 1000 });
+
+	test("creates key without params", () => {
 		const key = createCacheKey("prayers", 24.7136, 46.6753);
-		expect(key).toBe("prayers:24.7136:46.6753");
+		expect(key).toBe("prayers:24.71:46.68");
 	});
 
 	test("creates key with params", () => {
@@ -41,6 +47,111 @@ describe("createCacheKey", () => {
 		const key2 = createCacheKey("prayers", 24.71, 46.68, { a: "1", b: "2" });
 		expect(key1).toBe(key2);
 	});
+
+	test("has returns true for existing key", () => {
+		cache.set("key1", "value1");
+		expect(cache.has("key1")).toBe(true);
+	});
+
+	test("has returns false for missing key", () => {
+		expect(cache.has("missing")).toBe(false);
+	});
+
+	test("has returns false for expired key", async () => {
+		const shortCache = new CacheService<string>({ maxSize: 10, ttl: 50 });
+		shortCache.set("key1", "value1");
+		await new Promise((r) => setTimeout(r, 60));
+		expect(shortCache.has("key1")).toBe(false);
+	});
+
+	test("delete removes existing key", () => {
+		cache.set("key1", "value1");
+		expect(cache.delete("key1")).toBe(true);
+		expect(cache.get("key1")).toBeUndefined();
+	});
+
+	test("delete returns false for missing key", () => {
+		expect(cache.delete("missing")).toBe(false);
+	});
+
+	test("clear removes all entries and resets stats", () => {
+		cache.set("key1", "value1");
+		cache.set("key2", "value2");
+		cache.get("key1"); // hit
+
+		cache.clear();
+
+		expect(cache.get("key1")).toBeUndefined();
+		expect(cache.getStats()).toEqual({
+			size: 0,
+			hits: 0,
+			misses: 1,
+			hitRate: 0,
+		});
+	});
+
+	test("prune removes only expired entries", async () => {
+		const shortCache = new CacheService<string>({ maxSize: 10, ttl: 50 });
+		shortCache.set("expire1", "value1");
+		shortCache.set("expire2", "value2");
+
+		await new Promise((r) => setTimeout(r, 60));
+
+		shortCache.set("fresh", "value3"); // added after delay, not expired
+
+		const pruned = shortCache.prune();
+
+		expect(pruned).toBe(2);
+		expect(shortCache.has("fresh")).toBe(true);
+	});
 });
 
-// TODO: CacheService tests skipped — caching is disabled for debugging
+describe("CacheService", () => {
+	let cache: CacheService<string>;
+
+	beforeEach(() => {
+		cache = new CacheService({ maxSize: 3, ttl: 1000 });
+	});
+
+	test("get/set basic operations", () => {
+		cache.set("key1", "value1");
+		expect(cache.get("key1")).toBe("value1");
+	});
+
+	test("returns undefined for missing key", () => {
+		expect(cache.get("missing")).toBeUndefined();
+	});
+
+	test("tracks hits and misses", () => {
+		cache.set("key1", "value1");
+		cache.get("key1"); // hit
+		cache.get("key1"); // hit
+		cache.get("missing"); // miss
+
+		const stats = cache.getStats();
+		expect(stats.hits).toBe(2);
+		expect(stats.misses).toBe(1);
+		expect(stats.hitRate).toBeCloseTo(0.67, 1);
+	});
+
+	test("LRU eviction when at capacity", () => {
+		cache.set("key1", "value1");
+		cache.set("key2", "value2");
+		cache.set("key3", "value3");
+		cache.set("key4", "value4"); // should evict key1
+
+		expect(cache.get("key1")).toBeUndefined();
+		expect(cache.get("key4")).toBe("value4");
+	});
+
+	test("expires entries after TTL", async () => {
+		const shortCache = new CacheService<string>({ maxSize: 20, ttl: 50 });
+		shortCache.set("key1", "value1");
+
+		expect(shortCache.get("key1")).toBe("value1");
+
+		await new Promise((r) => setTimeout(r, 60));
+
+		expect(shortCache.get("key1")).toBeUndefined();
+	});
+});

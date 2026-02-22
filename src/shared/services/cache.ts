@@ -16,7 +16,8 @@ export const createCacheKey = (
 	lng: number,
 	params?: Record<string, string | number>,
 ): string => {
-	const base = `${prefix}:${lat}:${lng}`;
+	const [bucketLat, bucketLng] = bucketCoordinates(lat, lng);
+	const base = `${prefix}:${bucketLat}:${bucketLng}`;
 
 	if (!params || Object.keys(params).length === 0) {
 		return base;
@@ -62,15 +63,46 @@ export class CacheService<T = unknown> {
 		this.defaultTTL = options?.ttl ?? CACHE_TTL.PRAYER_TIMES;
 	}
 
-	// TODO: Caching disabled for debugging — re-enable later
-	get(_key: string): T | undefined {
-		return undefined;
+	get(key: string): T | undefined {
+		const entry = this.cache.get(key);
+
+		if (!entry) {
+			this.stats.misses++;
+			return undefined;
+		}
+
+		// Check expiration
+		if (Date.now() > entry.expiresAt) {
+			this.cache.delete(key);
+			this.stats.misses++;
+			return undefined;
+		}
+
+		this.stats.hits++;
+		return entry.value;
 	}
 
-	set(_key: string, _value: T, _ttl?: number): void {}
+	set(key: string, value: T, ttl?: number): void {
+		// FIFO eviction
+		if (this.cache.size >= this.maxSize) {
+			const firstKey = this.cache.keys().next().value;
+			if (firstKey) this.cache.delete(firstKey);
+		}
 
-	has(_key: string): boolean {
-		return false;
+		this.cache.set(key, {
+			value,
+			expiresAt: Date.now() + (ttl ?? this.defaultTTL),
+		});
+	}
+
+	has(key: string): boolean {
+		const entry = this.cache.get(key);
+		if (!entry) return false;
+		if (Date.now() > entry.expiresAt) {
+			this.cache.delete(key);
+			return false;
+		}
+		return true;
 	}
 
 	delete(key: string): boolean {
