@@ -1,17 +1,21 @@
 import { t } from "elysia";
 
 // GET /prayers query params
-export const PrayerTimesQuery = t.Object({
-	lat: t.Number({
-		minimum: -90,
-		maximum: 90,
-	}),
-	lng: t.Number({ minimum: -180, maximum: 180 }),
-	year: t.Optional(t.Number()),
-	month: t.Optional(t.Number({ minimum: 1, maximum: 12 })),
-	provider: t.Optional(t.String()),
-	options: t.Optional(t.Any()),
-});
+// additionalProperties: true lets provider-specific params (method, school, etc.)
+// pass through without coupling the schema to any specific provider
+export const PrayerTimesQuery = t.Object(
+	{
+		lat: t.Number({
+			minimum: -90,
+			maximum: 90,
+		}),
+		lng: t.Number({ minimum: -180, maximum: 180 }),
+		year: t.Optional(t.Number()),
+		month: t.Optional(t.Number({ minimum: 1, maximum: 12 })),
+		provider: t.Optional(t.String()),
+	},
+	{ additionalProperties: true },
+);
 
 // Day timings
 export const DayTimingsSchema = t.Object({
