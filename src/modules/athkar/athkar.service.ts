@@ -54,7 +54,7 @@ const CATALOG: ReciterCatalog = {
 			},
 			avatar: `${recitersBase}/mishary-alafasy/avatar.jpg`,
 			type: "clips",
-			totalSize: 16_863_836,
+			totalSize: 15_874_395,
 			thikrCount: 31,
 			sampleUrl: `${recitersBase}/mishary-alafasy/shared/ayat-al-kursi.mp3`,
 			manifestUrl: `${recitersBase}/mishary-alafasy/manifest.json`,
