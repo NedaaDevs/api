@@ -90,8 +90,8 @@ export default class AladhanAdapter extends PrayerTimesAdapter {
 				longitude: params.lng,
 				iso8601: true,
 				annual: true,
-				method: options.method ?? 2,
-				school: options.school ?? 0,
+				...(options.method !== undefined && { method: options.method }),
+				...(options.school !== undefined && { school: options.school }),
 				...(params.year && { year: params.year }),
 				...(params.month && { month: params.month }),
 				...(options.midnightMode !== undefined && {
