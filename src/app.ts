@@ -6,6 +6,7 @@ import { Elysia } from "elysia";
 import { athkarModule } from "@/modules/athkar";
 import { healthModule } from "@/modules/health";
 import { locationsModule } from "@/modules/locations";
+import { mushafModule } from "@/modules/mushaf";
 import { prayerModule } from "@/modules/prayers";
 import { telemetry } from "@/observability/telemetry";
 // Plugins
@@ -44,7 +45,8 @@ export const app = new Elysia()
 			.use(athkarModule)
 			.use(healthModule)
 			.use(prayerModule)
-			.use(locationsModule),
+			.use(locationsModule)
+			.use(mushafModule),
 	);
 
 export type App = typeof app;
