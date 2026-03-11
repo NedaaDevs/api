@@ -142,13 +142,21 @@ export class CacheService<T = unknown> {
 	}
 }
 
-// Singleton instances for different cache types
-export const prayerTimesCache = new CacheService({
+// Typed singleton instances for different cache types
+import type { PrayerTimesResult } from "@/modules/prayers/adapters/base.adapter";
+
+interface ReverseGeocodeResult {
+	countryName: string;
+	city: string;
+	timezone: string;
+}
+
+export const prayerTimesCache = new CacheService<PrayerTimesResult>({
 	maxSize: 1000,
 	ttl: CACHE_TTL.PRAYER_TIMES,
 });
 
-export const locationCache = new CacheService({
+export const locationCache = new CacheService<ReverseGeocodeResult>({
 	maxSize: 500,
 	ttl: CACHE_TTL.LOCATION,
 });

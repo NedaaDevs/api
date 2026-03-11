@@ -27,9 +27,7 @@ export abstract class PrayersService {
 			...params.options,
 		});
 
-		let result = prayerTimesCache.get(cacheKey) as
-			| PrayerTimesResult
-			| undefined;
+		let result = prayerTimesCache.get(cacheKey);
 
 		if (!result) {
 			const adapter = params.provider
