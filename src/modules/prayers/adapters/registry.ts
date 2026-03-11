@@ -2,7 +2,7 @@ import type {
 	AdapterMeta,
 	PrayerTimesAdapter,
 } from "@/modules/prayers/adapters/base.adapter";
-import { NotFoundError } from "@/shared/errors";
+import { AppError, CODES, NotFoundError } from "@/shared/errors";
 
 // Auto-discover adapters via glob import (resolved at bundle time)
 import adapterModules from "./*.adapter.ts";
@@ -54,7 +54,7 @@ export function listAdapters(): AdapterMeta[] {
 export function getDefaultAdapter(): PrayerTimesAdapter {
 	const first = adapters.values().next().value;
 	if (!first) {
-		throw new Error("No adapters registered");
+		throw new AppError("No adapters registered", 500, CODES.INTERNAL_ERROR);
 	}
 	return first;
 }
