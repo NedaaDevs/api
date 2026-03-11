@@ -8,12 +8,14 @@ import { healthModule } from "@/modules/health";
 import { locationsModule } from "@/modules/locations";
 import { mushafModule } from "@/modules/mushaf";
 import { prayerModule } from "@/modules/prayers";
+import { statsModule } from "@/modules/stats";
 import { telemetry } from "@/observability/telemetry";
 // Plugins
 import { errorHandler } from "@/shared/plugins/error-handler";
 import { securityHeaders } from "@/shared/plugins/helmet";
 import { logger } from "@/shared/plugins/logger";
 import { globalRateLimit } from "@/shared/plugins/rate-limiter";
+import { statsCollector } from "@/shared/plugins/stats-collector";
 
 export const app = new Elysia()
 	.use(telemetry)
@@ -39,6 +41,7 @@ export const app = new Elysia()
 		}),
 	)
 	.use(errorHandler)
+	.use(statsCollector)
 	.use(globalRateLimit)
 	.group("/v3", (app) =>
 		app
@@ -46,7 +49,8 @@ export const app = new Elysia()
 			.use(healthModule)
 			.use(prayerModule)
 			.use(locationsModule)
-			.use(mushafModule),
+			.use(mushafModule)
+			.use(statsModule),
 	);
 
 export type App = typeof app;
