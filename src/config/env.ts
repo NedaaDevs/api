@@ -29,6 +29,11 @@ const EnvSchema = t.Object({
 	ADMIN_API_KEY: t.String({
 		description: "Secret key for admin endpoints (cache clear, etc.)",
 	}),
+	OTEL_EXPORTER_OTLP_ENDPOINT: t.Optional(
+		t.String({
+			description: "OpenTelemetry OTLP exporter endpoint",
+		}),
+	),
 });
 
 export type Env = Static<typeof EnvSchema>;
