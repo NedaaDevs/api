@@ -1,4 +1,4 @@
-import { t } from "elysia";
+import { type Static, t } from "elysia";
 
 export const ReverseGeocodeQuery = t.Object({
 	lat: t.Number({
@@ -19,3 +19,6 @@ export const ReverseGeocodeResponse = t.Object({
 	city: t.String(),
 	timezone: t.String(),
 });
+
+export type ReverseGeocodeQueryType = Static<typeof ReverseGeocodeQuery>;
+export type ReverseGeocodeResponseType = Static<typeof ReverseGeocodeResponse>;
