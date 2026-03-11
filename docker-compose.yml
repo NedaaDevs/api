@@ -1,3 +1,6 @@
+volumes:
+  stats-data:
+
 services:
   api:
     build: .
@@ -10,6 +13,8 @@ services:
       - BDC_API_KEY=${BDC_API_KEY}
       - ADMIN_API_KEY=${ADMIN_API_KEY}
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
+    volumes:
+      - stats-data:/app/data
     restart: unless-stopped
     depends_on:
       - jaeger
