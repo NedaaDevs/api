@@ -1,7 +1,7 @@
 import { AppError, CODES } from "@/shared/errors";
 
-// Adapter-specific error
-export class ProviderError extends AppError {
+// Adapter-specific error (named AdapterError to avoid collision with shared ProviderError)
+export class AdapterError extends AppError {
 	constructor(providerId: string, message: string) {
 		super(
 			`Provider '${providerId}' error: ${message}`,
@@ -94,13 +94,13 @@ export abstract class PrayerTimesAdapter {
 			});
 
 			if (!response.ok) {
-				throw new ProviderError(this.meta.id, `HTTP ${response.status}`);
+				throw new AdapterError(this.meta.id, `HTTP ${response.status}`);
 			}
 
 			return response.json();
 		} catch (error) {
 			if (error instanceof AppError) throw error;
-			throw new ProviderError(
+			throw new AdapterError(
 				this.meta.id,
 				error instanceof Error ? error.message : "Unknown error",
 			);
