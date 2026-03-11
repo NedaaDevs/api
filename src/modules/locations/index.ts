@@ -7,7 +7,7 @@ import { LocationsService } from "@/modules/locations/locations.service";
 import { locationRateLimit } from "@/shared/plugins/rate-limiter";
 
 export const locationsModule = new Elysia({
-	name: "Locations",
+	name: "locationsModule",
 	prefix: "/locations",
 	detail: {
 		tags: ["Locations"],
