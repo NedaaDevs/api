@@ -1,3 +1,6 @@
+volumes:
+  stats-data:
+
 services:
   nedaa-api-new:
     image: ghcr.io/nedaadevs/api:latest
@@ -8,6 +11,8 @@ services:
       - BDC_API_KEY=${BDC_API_KEY}
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-}
       - ADMIN_API_KEY=${ADMIN_API_KEY}
+    volumes:
+      - stats-data:/app/data
     restart: unless-stopped
     pull_policy: always
     # healthcheck:
