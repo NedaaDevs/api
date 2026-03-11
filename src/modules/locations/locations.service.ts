@@ -1,4 +1,5 @@
 import { env } from "@/config/env";
+import { AppError, CODES } from "@/shared/errors";
 import { createCacheKey, locationCache } from "@/shared/services/cache";
 
 interface ReverseGeocodeParams {
@@ -33,7 +34,7 @@ export abstract class LocationsService {
 			locale: params.locale,
 		});
 		const cached = locationCache.get(cacheKey);
-		if (cached) return cached as ReverseGeocodeResult;
+		if (cached) return cached;
 
 		// Call BigDataCloud API
 		const url = new URL(`${env.BDC_API_URL}${LocationsService.API_PATH}`);
@@ -47,7 +48,11 @@ export abstract class LocationsService {
 		});
 
 		if (!response.ok) {
-			throw new Error(`BigDataCloud API error: ${response.status}`);
+			throw new AppError(
+				`BigDataCloud API error: ${response.status}`,
+				502,
+				CODES.PROVIDER_ERROR,
+			);
 		}
 
 		const data: BDCResponse = await response.json();
