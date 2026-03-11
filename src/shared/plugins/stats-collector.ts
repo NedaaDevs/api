@@ -16,8 +16,11 @@ export const statsCollector = new Elysia({ name: "statsCollector" })
 				? Math.round(performance.now() - requestStartTime)
 				: 0;
 
+			const endpoint =
+				path.length > 1 && path.endsWith("/") ? path.slice(0, -1) : path;
+
 			StatsService.record({
-				endpoint: path,
+				endpoint,
 				method: request.method,
 				statusCode: typeof set.status === "number" ? set.status : 200,
 				responseTimeMs,
