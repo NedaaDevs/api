@@ -1,4 +1,4 @@
-import { t } from "elysia";
+import { type Static, t } from "elysia";
 
 // GET /prayers query params
 // additionalProperties: true lets provider-specific params (method, school, etc.)
@@ -60,3 +60,7 @@ export const AdapterSchema = t.Object({
 
 // GET /prayers/providers response
 export const AdapterListResponse = t.Array(AdapterSchema);
+
+export type PrayerTimesQueryType = Static<typeof PrayerTimesQuery>;
+export type PrayerTimesResponseType = Static<typeof PrayerTimesResponse>;
+export type AdapterInfo = Static<typeof AdapterSchema>;

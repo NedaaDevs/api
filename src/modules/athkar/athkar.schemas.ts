@@ -1,4 +1,4 @@
-import { t } from "elysia";
+import { type Static, t } from "elysia";
 
 // Audio file entry in manifest
 const AudioFileEntrySchema = t.Object({
@@ -63,3 +63,6 @@ export const ReciterManifestResponse = t.Object({
 export const ReciterIdParam = t.Object({
 	id: t.String(),
 });
+
+export type ReciterCatalog = Static<typeof ReciterCatalogResponse>;
+export type ReciterManifest = Static<typeof ReciterManifestResponse>;
