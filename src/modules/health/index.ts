@@ -15,12 +15,21 @@ const cacheTypeSchema = t.Object({
 const healthSchema = t.Object({
 	status: t.String(),
 	timestamp: t.String(),
+	isDev: t.Boolean(),
 	cache: t.Optional(
 		t.Object({
 			prayerTimes: cacheTypeSchema,
 			location: cacheTypeSchema,
 		}),
 	),
+});
+
+const cacheClearResponse = t.Object({
+	message: t.String(),
+	cleared: t.Object({
+		prayerTimes: t.Number(),
+		location: t.Number(),
+	}),
 });
 
 const getHealth = () => ({
@@ -62,6 +71,7 @@ export const healthModule = new Elysia({
 			};
 		},
 		{
+			response: cacheClearResponse,
 			beforeHandle({ headers }) {
 				if (headers["x-admin-key"] !== env.ADMIN_API_KEY) {
 					throw new AppError("Unauthorized", 401, CODES.UNAUTHORIZED);
