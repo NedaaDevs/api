@@ -5,7 +5,7 @@ import { MushafConfigResponse } from "@/modules/mushaf/mushaf.schemas";
 const mushafConfig = {
 	version: 1,
 	fontsBaseUrl: `${env.CDN_URL}/mushaf/fonts`,
-	totalSizeMB: 30,
+	totalSizeMB: 199,
 	totalFonts: 604,
 } as const;
 
