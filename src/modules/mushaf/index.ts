@@ -4,13 +4,9 @@ import { MushafConfigResponse } from "@/modules/mushaf/mushaf.schemas";
 
 const mushafConfig = {
 	version: 1,
-	baseUrl: `${env.CDN_URL}/mushaf`,
-	manifestUrl: `${env.CDN_URL}/mushaf/manifest.json`,
-	pagesBaseUrl: `${env.CDN_URL}/mushaf/pages`,
-	imageWidth: 2048,
-	imageHeight: 3313,
-	totalPages: 604,
-	totalSizeMB: 110,
+	fontsBaseUrl: `${env.CDN_URL}/mushaf/fonts`,
+	totalSizeMB: 30,
+	totalFonts: 604,
 } as const;
 
 export const mushafModule = new Elysia({
