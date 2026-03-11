@@ -20,7 +20,12 @@ export const statsModule = new Elysia({
 		query: StatsPeriodQuery,
 		response: StatsSummaryResponse,
 		beforeHandle({ headers }) {
-			if (headers["x-admin-key"] !== env.ADMIN_API_KEY) {
+			const origin = headers.origin ?? "";
+			const isNedaa =
+				origin === "https://nedaa.dev" || origin === "https://www.nedaa.dev";
+			const isAdmin = headers["x-admin-key"] === env.ADMIN_API_KEY;
+
+			if (!isNedaa && !isAdmin) {
 				throw new AppError("Unauthorized", 401, CODES.UNAUTHORIZED);
 			}
 		},
