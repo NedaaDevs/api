@@ -6,8 +6,8 @@ import { Elysia } from "elysia";
 import { athkarModule } from "@/modules/athkar";
 import { healthModule } from "@/modules/health";
 import { locationsModule } from "@/modules/locations";
-import { mushafModule } from "@/modules/mushaf";
 import { prayerModule } from "@/modules/prayers";
+import { quranModule } from "@/modules/quran";
 import { statsModule } from "@/modules/stats";
 import { telemetry } from "@/observability/telemetry";
 // Plugins
@@ -36,6 +36,10 @@ export const app = new Elysia()
 						name: "Health",
 						description: "Health check endpoint",
 					},
+					{
+						name: "Quran",
+						description: "Quran mushaf manifest and assets",
+					},
 				],
 			},
 		}),
@@ -49,7 +53,7 @@ export const app = new Elysia()
 			.use(healthModule)
 			.use(prayerModule)
 			.use(locationsModule)
-			.use(mushafModule)
+			.use(quranModule)
 			.use(statsModule),
 	);
 
