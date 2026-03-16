@@ -40,7 +40,7 @@ const VERSIONS: QuranVersion[] = [
 		linesPerPage: 15,
 		imageWidth: 1440,
 		imageHeight: 232,
-		totalSizeMB: 108,
+		totalSizeMB: 106.9,
 		boundsDbSizeMB: 5,
 		baseUrl: `${quranBase}/v2`,
 		paths: {
@@ -51,9 +51,9 @@ const VERSIONS: QuranVersion[] = [
 		markers: MARKERS,
 		checksums: {
 			boundsDb:
-				"sha256:d3d87b960c51e035a3dc91c0f9ac961567a5dd0197424de5c28ec864091b73be",
+				"sha256:99db8a8b92c1051da2e34989c04a02bb1fa9544ed1b91d64a908a0eb09af1e5e",
 			manifest:
-				"sha256:98dca13b9532db85564b10c66073fccd9858c1e3ff92000b0bfcbfc9fd164df8",
+				"sha256:6d756acc7cf322434f5c9dab6bf0a6a8bea0fb36699dd1a5cf1d3084943cd321",
 		},
 	},
 	{
