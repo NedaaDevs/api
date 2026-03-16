@@ -9,6 +9,8 @@ const VERSIONS: QuranVersion[] = [
 	{
 		id: "v1",
 		name: "Madinah Mushaf V1",
+		yearHijri: 1405,
+		yearGregorian: 1984,
 		totalPages: 604,
 		linesPerPage: 15,
 		imageWidth: 1440,
@@ -32,6 +34,8 @@ const VERSIONS: QuranVersion[] = [
 	{
 		id: "v2",
 		name: "Madinah Mushaf V2",
+		yearHijri: 1420,
+		yearGregorian: 1999,
 		totalPages: 604,
 		linesPerPage: 15,
 		imageWidth: 1440,
@@ -55,6 +59,8 @@ const VERSIONS: QuranVersion[] = [
 	{
 		id: "v4",
 		name: "Madinah Mushaf V4",
+		yearHijri: 1439,
+		yearGregorian: 2017,
 		totalPages: 604,
 		linesPerPage: 15,
 		imageWidth: 1440,

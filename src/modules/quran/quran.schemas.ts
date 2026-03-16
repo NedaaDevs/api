@@ -14,6 +14,8 @@ const PathsSchema = t.Object({
 const QuranVersionSchema = t.Object({
 	id: t.String(),
 	name: t.String(),
+	yearHijri: t.Number(),
+	yearGregorian: t.Number(),
 	totalPages: t.Number(),
 	linesPerPage: t.Number(),
 	imageWidth: t.Number(),
