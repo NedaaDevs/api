@@ -6,7 +6,8 @@ const ChecksumsSchema = t.Object({
 });
 
 const PathsSchema = t.Object({
-	lines: t.String(),
+	lines: t.Optional(t.String()),
+	pages: t.Optional(t.String()),
 	boundsDb: t.String(),
 	markers: t.String(),
 });
@@ -14,6 +15,7 @@ const PathsSchema = t.Object({
 const QuranVersionSchema = t.Object({
 	id: t.String(),
 	name: t.String(),
+	type: t.Union([t.Literal("line"), t.Literal("page")]),
 	yearHijri: t.Number(),
 	yearGregorian: t.Number(),
 	totalPages: t.Number(),
