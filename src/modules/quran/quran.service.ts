@@ -9,79 +9,70 @@ const VERSIONS: QuranVersion[] = [
 	{
 		id: "v1",
 		name: "Madinah Mushaf V1",
-		type: "page",
 		yearHijri: 1405,
 		yearGregorian: 1984,
 		totalPages: 604,
 		linesPerPage: 15,
 		imageWidth: 1440,
 		imageHeight: 232,
-		totalSizeMB: 94.2,
-		boundsDbSizeMB: 5,
+		bundleSizeMB: 97.7,
+		totalSizeMB: 111.3,
 		baseUrl: `${quranBase}/v1`,
 		paths: {
-			pages: "/pages/{page}.png",
-			boundsDb: "/bounds.db",
-			markers: "/markers/{name}.png",
+			bundle: "/bundle.zip",
 		},
 		markers: MARKERS,
 		checksums: {
-			boundsDb:
-				"sha256:254d0fb59ed3b1329c4d426d6441b48f8a27eca60aeeabdbeb1b03787dd993ad",
+			bundle:
+				"sha256:2a3cafac2123ae79fbe6e7a1ca82dbd99f0aa5fd77d811cbd6e54b0b691e577a",
 			manifest:
-				"sha256:113b2c3544e110eee0dbbe3ffe1dfb05e383b04d54b27b9ae3fbc8b2eaa8d0d0",
+				"sha256:d18f1dce46e6328990c78166c66cfd0a7ebbc1bd9272066011beaa8536482b59",
 		},
 	},
 	{
 		id: "v2",
 		name: "Madinah Mushaf V2",
-		type: "page",
 		yearHijri: 1420,
 		yearGregorian: 1999,
 		totalPages: 604,
 		linesPerPage: 15,
 		imageWidth: 1440,
 		imageHeight: 232,
-		totalSizeMB: 105.2,
-		boundsDbSizeMB: 5,
+		bundleSizeMB: 108.6,
+		totalSizeMB: 124.5,
 		baseUrl: `${quranBase}/v2`,
 		paths: {
-			pages: "/pages/{page}.png",
-			boundsDb: "/bounds.db",
-			markers: "/markers/{name}.png",
+			bundle: "/bundle.zip",
 		},
 		markers: MARKERS,
 		checksums: {
-			boundsDb:
-				"sha256:9aef9efc84797b35b557901cbd7f09a87fc38e8a9745649b7f55d680a86a372f",
+			bundle:
+				"sha256:e173ae8f57f445a5acb994d4639bf9e95fdddf6783eb66751bed88099119b20e",
 			manifest:
-				"sha256:3d6fc87bdb61cd546c790fa8939ae397f10f07697ea4983bf668eac170710883",
+				"sha256:3836d760519ee794c027db5295b95e463c61466846c8bf2acdfa727c6fd9e1a2",
 		},
 	},
 	{
 		id: "v4",
 		name: "Madinah Mushaf V4",
-		type: "page",
 		yearHijri: 1439,
 		yearGregorian: 2017,
 		totalPages: 604,
 		linesPerPage: 15,
 		imageWidth: 1440,
 		imageHeight: 232,
-		totalSizeMB: 100.2,
-		boundsDbSizeMB: 5,
+		bundleSizeMB: 103.8,
+		totalSizeMB: 116.9,
 		baseUrl: `${quranBase}/v4`,
 		paths: {
-			pages: "/pages/{page}.png",
-			boundsDb: "/bounds.db",
-			markers: "/markers/{name}.png",
+			bundle: "/bundle.zip",
 		},
 		markers: MARKERS,
 		checksums: {
-			boundsDb:
-				"sha256:8d93a499b567f05cd5bad72ba19fca96754d8e98afa6b8733f75da31f3c21ddc",
+			bundle:
+				"sha256:714bbfcd2a83bc719484340b99e7240932e631d8a5f6176fff893fb0d11e34b8",
 			manifest:
-				"sha256:e768549744c40f2fe421a1edcd077cc3399405e61459d987614f22c2c217b8d7",
+				"sha256:c8401c7c8070baa96be8160ba170103d2686ab87d2c3704bf3e7b1a99816fced",
 		},
 	},
 ];
