@@ -44,16 +44,14 @@ describe("GET /v3/quran/manifest", () => {
 			expect(version.linesPerPage).toBeNumber();
 			expect(version.imageWidth).toBeNumber();
 			expect(version.imageHeight).toBeNumber();
+			expect(version.bundleSizeMB).toBeNumber();
 			expect(version.totalSizeMB).toBeNumber();
-			expect(version.boundsDbSizeMB).toBeNumber();
 			expect(version.baseUrl).toBeString();
 			expect(version.paths).toBeDefined();
-			expect(version.paths.lines).toBeString();
-			expect(version.paths.boundsDb).toBeString();
-			expect(version.paths.markers).toBeString();
+			expect(version.paths.bundle).toBeString();
 			expect(version.markers).toBeArray();
 			expect(version.checksums).toBeDefined();
-			expect(version.checksums.boundsDb).toBeString();
+			expect(version.checksums.bundle).toBeString();
 			expect(version.checksums.manifest).toBeString();
 		}
 	});
