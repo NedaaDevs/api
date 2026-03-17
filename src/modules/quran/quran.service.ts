@@ -27,9 +27,9 @@ const VERSIONS: QuranVersion[] = [
 		markers: MARKERS,
 		checksums: {
 			boundsDb:
-				"sha256:39703611bf65d050900725a1b3a421eb22ef7b9004640adf2ff6c0419642748d",
+				"sha256:254d0fb59ed3b1329c4d426d6441b48f8a27eca60aeeabdbeb1b03787dd993ad",
 			manifest:
-				"sha256:98d7e9df794fbf137a5d3accf819cdd48cc52c1523a5e45da790e4c5a111e1cc",
+				"sha256:113b2c3544e110eee0dbbe3ffe1dfb05e383b04d54b27b9ae3fbc8b2eaa8d0d0",
 		},
 	},
 	{
@@ -53,9 +53,9 @@ const VERSIONS: QuranVersion[] = [
 		markers: MARKERS,
 		checksums: {
 			boundsDb:
-				"sha256:d5125e0f6e92acf845d7ff3f601db852561289600797d8a16d1961e425e2d17b",
+				"sha256:9aef9efc84797b35b557901cbd7f09a87fc38e8a9745649b7f55d680a86a372f",
 			manifest:
-				"sha256:0994f9ecab3c3d5726d032b9a6452f465382ce1eab435b34abec3084c37f0796",
+				"sha256:3d6fc87bdb61cd546c790fa8939ae397f10f07697ea4983bf668eac170710883",
 		},
 	},
 	{
@@ -79,9 +79,9 @@ const VERSIONS: QuranVersion[] = [
 		markers: MARKERS,
 		checksums: {
 			boundsDb:
-				"sha256:c580b2caedc2258bd3133d6750174e3b79b6723e9cdfef66bf62eba8fdd742ca",
+				"sha256:8d93a499b567f05cd5bad72ba19fca96754d8e98afa6b8733f75da31f3c21ddc",
 			manifest:
-				"sha256:f68503d9d07d46ebc8bf010cb3477344a64375b601a3e0e3ec6054832183f4d5",
+				"sha256:e768549744c40f2fe421a1edcd077cc3399405e61459d987614f22c2c217b8d7",
 		},
 	},
 ];
