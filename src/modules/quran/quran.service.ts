@@ -24,9 +24,9 @@ const VERSIONS: QuranVersion[] = [
 		markers: MARKERS,
 		checksums: {
 			bundle:
-				"sha256:2a3cafac2123ae79fbe6e7a1ca82dbd99f0aa5fd77d811cbd6e54b0b691e577a",
+				"sha256:811f8ac4820c7fa09d80de6ee254ca361de3df84b959b93a4e2fe3a84b3a2dec",
 			manifest:
-				"sha256:d18f1dce46e6328990c78166c66cfd0a7ebbc1bd9272066011beaa8536482b59",
+				"sha256:c769320ede78bb96b92818bcb3cc0be7bb69d6c1d51475c992c58d2792179751",
 		},
 	},
 	{
@@ -38,7 +38,7 @@ const VERSIONS: QuranVersion[] = [
 		linesPerPage: 15,
 		imageWidth: 1440,
 		imageHeight: 232,
-		bundleSizeMB: 108.6,
+		bundleSizeMB: 108.7,
 		totalSizeMB: 124.5,
 		baseUrl: `${quranBase}/v2`,
 		paths: {
@@ -47,9 +47,9 @@ const VERSIONS: QuranVersion[] = [
 		markers: MARKERS,
 		checksums: {
 			bundle:
-				"sha256:e173ae8f57f445a5acb994d4639bf9e95fdddf6783eb66751bed88099119b20e",
+				"sha256:84f87c01423153d9d977f305e83327d7611c7fa985c576e0435c9c044dc9f4cc",
 			manifest:
-				"sha256:3836d760519ee794c027db5295b95e463c61466846c8bf2acdfa727c6fd9e1a2",
+				"sha256:dcfe0919cdab0f53e34c7c6b3a9abf3c00b63ee451c84fd15f6c6e3a9ba639d2",
 		},
 	},
 	{
@@ -61,8 +61,8 @@ const VERSIONS: QuranVersion[] = [
 		linesPerPage: 15,
 		imageWidth: 1440,
 		imageHeight: 232,
-		bundleSizeMB: 103.8,
-		totalSizeMB: 116.9,
+		bundleSizeMB: 92.0,
+		totalSizeMB: 109.9,
 		baseUrl: `${quranBase}/v4`,
 		paths: {
 			bundle: "/bundle.zip",
@@ -70,9 +70,9 @@ const VERSIONS: QuranVersion[] = [
 		markers: MARKERS,
 		checksums: {
 			bundle:
-				"sha256:714bbfcd2a83bc719484340b99e7240932e631d8a5f6176fff893fb0d11e34b8",
+				"sha256:0ce0df07dafbca0d787ca865ee90ef1387256c57940080c6cc2136a35d635c37",
 			manifest:
-				"sha256:c8401c7c8070baa96be8160ba170103d2686ab87d2c3704bf3e7b1a99816fced",
+				"sha256:63d2b736afaa3a6c6e5006a6cb5dc4c99305a0fb1be224cebc978f655ddb59b1",
 		},
 	},
 ];
