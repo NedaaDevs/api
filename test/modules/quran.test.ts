@@ -44,16 +44,34 @@ describe("GET /v3/quran/manifest", () => {
 			expect(version.linesPerPage).toBeNumber();
 			expect(version.imageWidth).toBeNumber();
 			expect(version.imageHeight).toBeNumber();
-			expect(version.bundleSizeMB).toBeNumber();
 			expect(version.totalSizeMB).toBeNumber();
 			expect(version.baseUrl).toBeString();
-			expect(version.paths).toBeDefined();
-			expect(version.paths.bundle).toBeString();
+			expect(version.bundle).toBeDefined();
+			expect(version.bundle.path).toBeString();
+			expect(version.bundle.sizeMB).toBeNumber();
+			expect(version.bundle.checksum).toBeString();
 			expect(version.markers).toBeArray();
-			expect(version.checksums).toBeDefined();
-			expect(version.checksums.bundle).toBeString();
-			expect(version.checksums.manifest).toBeString();
+			expect(version.manifestChecksum).toBeString();
 		}
+	});
+
+	test("only v4 ships a dark bundle, mirroring the light bundle shape", async () => {
+		const response = await app.handle(
+			new Request("http://localhost/v3/quran/manifest"),
+		);
+		const body = await response.json();
+
+		const byId = (id: string) =>
+			body.versions.find((v: { id: string }) => v.id === id);
+
+		expect(byId("v1").darkBundle).toBeUndefined();
+		expect(byId("v2").darkBundle).toBeUndefined();
+
+		const v4Dark = byId("v4").darkBundle;
+		expect(v4Dark).toBeDefined();
+		expect(v4Dark.path).toBeString();
+		expect(v4Dark.sizeMB).toBeNumber();
+		expect(v4Dark.checksum).toBeString();
 	});
 
 	test("baseUrl uses CDN_URL", async () => {

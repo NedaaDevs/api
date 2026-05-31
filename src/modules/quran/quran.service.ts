@@ -15,19 +15,17 @@ const VERSIONS: QuranVersion[] = [
 		linesPerPage: 15,
 		imageWidth: 1440,
 		imageHeight: 232,
-		bundleSizeMB: 97.7,
-		totalSizeMB: 111.3,
 		baseUrl: `${quranBase}/v1`,
-		paths: {
-			bundle: "/bundle.zip",
+		bundle: {
+			path: "/bundle.zip",
+			sizeMB: 97.7,
+			checksum:
+				"sha256:f62e3a42a76be2a0c60e7159262254f342d1e6532d4fdeeb7e094d195399e18d",
 		},
+		totalSizeMB: 110.8,
 		markers: MARKERS,
-		checksums: {
-			bundle:
-				"sha256:94970f9680f616c6522c8ee717be67ba670dda6c3421c81874f022cfd800dd24",
-			manifest:
-				"sha256:c88c712e8c23ee5a2efa5d3606c30dfcedeca5cc642db828515dfc2de520cc98",
-		},
+		manifestChecksum:
+			"sha256:175cdabeb5f39187fbfef267d3199104a81dc4fa7b0e81b350a864c6e42e44fd",
 	},
 	{
 		id: "v2",
@@ -38,19 +36,17 @@ const VERSIONS: QuranVersion[] = [
 		linesPerPage: 15,
 		imageWidth: 1440,
 		imageHeight: 232,
-		bundleSizeMB: 109.2,
-		totalSizeMB: 125.0,
 		baseUrl: `${quranBase}/v2`,
-		paths: {
-			bundle: "/bundle.zip",
+		bundle: {
+			path: "/bundle.zip",
+			sizeMB: 108.7,
+			checksum:
+				"sha256:a24d3529bb157ea71df8002ac732b4129ab72975fd802b34fa527986841bb6ce",
 		},
+		totalSizeMB: 124.1,
 		markers: MARKERS,
-		checksums: {
-			bundle:
-				"sha256:df1de924110f9432a27af8743889da8a4f7c1ca81f02b4c14781cae04676b7e4",
-			manifest:
-				"sha256:ee92eba91d09b173becab51e3ab110f647b1490d5257d1b9765d52c6fbc8887b",
-		},
+		manifestChecksum:
+			"sha256:f14ae85a1dbd99c13fe42fad506d96f1174ffd0846c241f306abca0ca2f2f400",
 	},
 	{
 		id: "v4",
@@ -61,19 +57,23 @@ const VERSIONS: QuranVersion[] = [
 		linesPerPage: 15,
 		imageWidth: 1440,
 		imageHeight: 232,
-		bundleSizeMB: 91.9,
-		totalSizeMB: 109.9,
 		baseUrl: `${quranBase}/v4`,
-		paths: {
-			bundle: "/bundle.zip",
+		bundle: {
+			path: "/bundle.zip",
+			sizeMB: 92,
+			checksum:
+				"sha256:aacea5cb4c258a8947d287ec3b5274032be4c7bf78ce589f72ef8c2954e91bf2",
 		},
+		darkBundle: {
+			path: "/bundle-dark.zip",
+			sizeMB: 92.4,
+			checksum:
+				"sha256:285cce5428a696eac3d5185d4dc56a094b2116ae870e4868075052e30db9b50c",
+		},
+		totalSizeMB: 109.4,
 		markers: MARKERS,
-		checksums: {
-			bundle:
-				"sha256:f2869b025567769f651b9a84a833d383b2e239b64e509f716220a383963f80e9",
-			manifest:
-				"sha256:879b27e7bee7b6dc577806116bd88a3d6ab2f2315bec72dcb5850ae234fe4259",
-		},
+		manifestChecksum:
+			"sha256:95e4ac41689080e65a29bbd843b7a4bf543347e99ab3b4ce539b675a8b8e5a81",
 	},
 ];
 
