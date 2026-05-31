@@ -61,8 +61,8 @@ const VERSIONS: QuranVersion[] = [
 		linesPerPage: 15,
 		imageWidth: 1440,
 		imageHeight: 232,
-		bundleSizeMB: 91.8,
-		totalSizeMB: 109.8,
+		bundleSizeMB: 91.9,
+		totalSizeMB: 109.9,
 		baseUrl: `${quranBase}/v4`,
 		paths: {
 			bundle: "/bundle.zip",
@@ -70,9 +70,9 @@ const VERSIONS: QuranVersion[] = [
 		markers: MARKERS,
 		checksums: {
 			bundle:
-				"sha256:0c779c426613e5b9f1b164c5a0cae60208f7fec7faa62beaa0241292299bc9a3",
+				"sha256:f2869b025567769f651b9a84a833d383b2e239b64e509f716220a383963f80e9",
 			manifest:
-				"sha256:27e0f718b9f5cb9c458ad308031d7891241d0c7a035ed4b9f5e883464809d85a",
+				"sha256:879b27e7bee7b6dc577806116bd88a3d6ab2f2315bec72dcb5850ae234fe4259",
 		},
 	},
 ];
