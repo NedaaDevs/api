@@ -8,6 +8,15 @@ const BundleSchema = t.Object({
 	checksum: t.String(),
 });
 
+// A preview is one fully-rendered (marker-composited) sample page. Display-only,
+// so no checksum — unlike bundles, integrity verification doesn't apply.
+const PreviewSchema = t.Object({
+	page: t.Integer({ minimum: 1 }),
+	path: t.String(), // relative to baseUrl → app builds `${baseUrl}${path}`
+	width: t.Integer({ minimum: 1 }),
+	height: t.Integer({ minimum: 1 }),
+});
+
 const QuranVersionSchema = t.Object({
 	id: t.String(),
 	name: t.String(),
@@ -24,6 +33,10 @@ const QuranVersionSchema = t.Object({
 	darkBundle: t.Optional(BundleSchema),
 	totalSizeMB: t.Number(),
 	markers: t.Array(t.String()),
+	// Light sample pages (every version) — compare styles before download.
+	previews: t.Array(PreviewSchema),
+	// Dark sample pages, present only on colored mushaf versions (v4), mirroring darkBundle.
+	darkPreviews: t.Optional(t.Array(PreviewSchema)),
 	// Cache-busting digest over this version's bundle checksum(s) — changes
 	// whenever `bundle` (or `darkBundle`, when present) is re-uploaded.
 	manifestChecksum: t.String(),
@@ -37,3 +50,4 @@ export const QuranManifestResponse = t.Object({
 export type QuranManifest = Static<typeof QuranManifestResponse>;
 export type QuranVersion = Static<typeof QuranVersionSchema>;
 export type QuranBundle = Static<typeof BundleSchema>;
+export type QuranPreview = Static<typeof PreviewSchema>;

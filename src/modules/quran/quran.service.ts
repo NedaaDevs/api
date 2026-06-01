@@ -24,6 +24,11 @@ const VERSIONS: QuranVersion[] = [
 		},
 		totalSizeMB: 110.8,
 		markers: MARKERS,
+		previews: [
+			{ page: 1, path: "/previews/001.webp", width: 1440, height: 3480 },
+			{ page: 2, path: "/previews/002.webp", width: 1440, height: 3480 },
+			{ page: 302, path: "/previews/302.webp", width: 1440, height: 3480 },
+		],
 		manifestChecksum:
 			"sha256:175cdabeb5f39187fbfef267d3199104a81dc4fa7b0e81b350a864c6e42e44fd",
 	},
@@ -45,6 +50,11 @@ const VERSIONS: QuranVersion[] = [
 		},
 		totalSizeMB: 124.1,
 		markers: MARKERS,
+		previews: [
+			{ page: 1, path: "/previews/001.webp", width: 1440, height: 3480 },
+			{ page: 2, path: "/previews/002.webp", width: 1440, height: 3480 },
+			{ page: 302, path: "/previews/302.webp", width: 1440, height: 3480 },
+		],
 		manifestChecksum:
 			"sha256:f14ae85a1dbd99c13fe42fad506d96f1174ffd0846c241f306abca0ca2f2f400",
 	},
@@ -72,6 +82,16 @@ const VERSIONS: QuranVersion[] = [
 		},
 		totalSizeMB: 109.4,
 		markers: MARKERS,
+		previews: [
+			{ page: 1, path: "/previews/001.webp", width: 1440, height: 3480 },
+			{ page: 2, path: "/previews/002.webp", width: 1440, height: 3480 },
+			{ page: 302, path: "/previews/302.png", width: 1440, height: 3480 },
+		],
+		darkPreviews: [
+			{ page: 1, path: "/previews/001-dark.webp", width: 1440, height: 3480 },
+			{ page: 2, path: "/previews/002-dark.webp", width: 1440, height: 3480 },
+			{ page: 302, path: "/previews/302-dark.png", width: 1440, height: 3480 },
+		],
 		manifestChecksum:
 			"sha256:95e4ac41689080e65a29bbd843b7a4bf543347e99ab3b4ce539b675a8b8e5a81",
 	},

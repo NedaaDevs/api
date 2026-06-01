@@ -5,6 +5,9 @@ import { quranModule } from "@/modules/quran";
 
 const app = new Elysia().group("/v3", (app) => app.use(quranModule));
 
+// Fixed preview page set, identical across all versions (see quran-preview.ts).
+const PREVIEW_PAGES = [1, 2, 302];
+
 describe("GET /v3/quran/manifest", () => {
 	test("returns 200 with manifest", async () => {
 		const response = await app.handle(
@@ -83,6 +86,41 @@ describe("GET /v3/quran/manifest", () => {
 		for (const version of body.versions) {
 			expect(version.baseUrl).toStartWith(env.CDN_URL);
 			expect(version.baseUrl).toContain(`/quran/${version.id}`);
+		}
+	});
+
+	test("every version has previews for the fixed page set", async () => {
+		const response = await app.handle(
+			new Request("http://localhost/v3/quran/manifest"),
+		);
+		const body = await response.json();
+		for (const version of body.versions) {
+			expect(version.previews).toBeArray();
+			expect(version.previews.map((p: { page: number }) => p.page)).toEqual(
+				PREVIEW_PAGES,
+			);
+			for (const p of version.previews) {
+				expect(p.path).toStartWith("/previews/");
+				expect(p.width).toBeGreaterThan(0);
+				expect(p.height).toBeGreaterThan(0);
+			}
+		}
+	});
+
+	test("only v4 ships dark previews, same page set", async () => {
+		const response = await app.handle(
+			new Request("http://localhost/v3/quran/manifest"),
+		);
+		const body = await response.json();
+		const byId = (id: string) =>
+			body.versions.find((v: { id: string }) => v.id === id);
+		expect(byId("v1").darkPreviews).toBeUndefined();
+		expect(byId("v2").darkPreviews).toBeUndefined();
+		const v4Dark = byId("v4").darkPreviews;
+		expect(v4Dark).toBeArray();
+		expect(v4Dark.map((p: { page: number }) => p.page)).toEqual(PREVIEW_PAGES);
+		for (const p of v4Dark) {
+			expect(p.path).toMatch(/^\/previews\/\d{3}-dark\.\w+$/);
 		}
 	});
 });
