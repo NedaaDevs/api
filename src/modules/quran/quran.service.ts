@@ -18,11 +18,11 @@ const VERSIONS: QuranVersion[] = [
 		baseUrl: `${quranBase}/v1`,
 		bundle: {
 			path: "/bundle.zip",
-			sizeMB: 93.9,
+			sizeMB: 97.9,
 			checksum:
-				"sha256:01a9e41ed6174d2c1d2d44dc54463ffbddac9745d1fd18a7e4e39a836cf643b1",
+				"sha256:3bfad5f58669ade66187958d670b645abda9dd3f7d9927a706a569fa0d190ddf",
 		},
-		totalSizeMB: 272.2,
+		totalSizeMB: 110.9,
 		markers: MARKERS,
 		previews: [
 			{ page: 1, path: "/previews/001.webp", width: 1440, height: 3480 },
@@ -30,7 +30,7 @@ const VERSIONS: QuranVersion[] = [
 			{ page: 302, path: "/previews/302.webp", width: 1440, height: 3480 },
 		],
 		manifestChecksum:
-			"sha256:0d60944ea9cf9f68ff2d3f1fd7a31cac6cc80f1a4876e50bfcf67fd063a536a8",
+			"sha256:f23216fe45f49daf06a5942dc6842d707ab72c38627e809c86c505a37885fc02",
 	},
 	{
 		id: "v2",
@@ -44,11 +44,11 @@ const VERSIONS: QuranVersion[] = [
 		baseUrl: `${quranBase}/v2`,
 		bundle: {
 			path: "/bundle.zip",
-			sizeMB: 106.4,
+			sizeMB: 108.9,
 			checksum:
-				"sha256:3fbe40a577323fb2d8f2ef75152d7f9e9f1d4818a1735eb4c251e7700caebd7a",
+				"sha256:2b927ecaae9caad36455fb80925d037ca492032b008e5d0e65a820382c5b5153",
 		},
-		totalSizeMB: 298.8,
+		totalSizeMB: 124.2,
 		markers: MARKERS,
 		previews: [
 			{ page: 1, path: "/previews/001.webp", width: 1440, height: 3480 },
@@ -56,7 +56,7 @@ const VERSIONS: QuranVersion[] = [
 			{ page: 302, path: "/previews/302.webp", width: 1440, height: 3480 },
 		],
 		manifestChecksum:
-			"sha256:43e821bb7048834a5d111827e1fd166a4626e6043a54ac2234bc1e8c92839471",
+			"sha256:846983ebb6c106e1069a52bd5055d37ed6fde44651c1384e34ba2600e3dd7dfb",
 	},
 	{
 		id: "v4",
@@ -70,17 +70,17 @@ const VERSIONS: QuranVersion[] = [
 		baseUrl: `${quranBase}/v4`,
 		bundle: {
 			path: "/bundle.zip",
-			sizeMB: 92,
+			sizeMB: 92.1,
 			checksum:
-				"sha256:aacea5cb4c258a8947d287ec3b5274032be4c7bf78ce589f72ef8c2954e91bf2",
+				"sha256:bdf041ad0ec2a4b85d47ad79dc2b770a23005abd017705c5eb4ef0a5948d30f2",
 		},
 		darkBundle: {
 			path: "/bundle-dark.zip",
-			sizeMB: 92.4,
+			sizeMB: 92.5,
 			checksum:
-				"sha256:285cce5428a696eac3d5185d4dc56a094b2116ae870e4868075052e30db9b50c",
+				"sha256:de8ff06a7226dd2b68239debb072148a5e560df7217b90a6b49429c54feaff42",
 		},
-		totalSizeMB: 387.6,
+		totalSizeMB: 109.6,
 		markers: MARKERS,
 		previews: [
 			{ page: 1, path: "/previews/001.webp", width: 1440, height: 3480 },
@@ -93,7 +93,7 @@ const VERSIONS: QuranVersion[] = [
 			{ page: 302, path: "/previews/302-dark.png", width: 1440, height: 3480 },
 		],
 		manifestChecksum:
-			"sha256:95e4ac41689080e65a29bbd843b7a4bf543347e99ab3b4ce539b675a8b8e5a81",
+			"sha256:addb1c47615154f0be993ce3ecccc46b6e20d1967bcb8bafeab25ae005568bb2",
 	},
 ];
 
