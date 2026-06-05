@@ -31,6 +31,7 @@ const VERSIONS: QuranVersion[] = [
 		],
 		manifestChecksum:
 			"sha256:f23216fe45f49daf06a5942dc6842d707ab72c38627e809c86c505a37885fc02",
+		published: true,
 	},
 	{
 		id: "v2",
@@ -57,6 +58,7 @@ const VERSIONS: QuranVersion[] = [
 		],
 		manifestChecksum:
 			"sha256:846983ebb6c106e1069a52bd5055d37ed6fde44651c1384e34ba2600e3dd7dfb",
+		published: true,
 	},
 	{
 		id: "v4",
@@ -94,6 +96,7 @@ const VERSIONS: QuranVersion[] = [
 		],
 		manifestChecksum:
 			"sha256:addb1c47615154f0be993ce3ecccc46b6e20d1967bcb8bafeab25ae005568bb2",
+		published: true,
 	},
 ];
 

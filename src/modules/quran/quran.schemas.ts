@@ -40,6 +40,8 @@ const QuranVersionSchema = t.Object({
 	// Cache-busting digest over this version's bundle checksum(s) — changes
 	// whenever `bundle` (or `darkBundle`, when present) is re-uploaded.
 	manifestChecksum: t.String(),
+	// False = unreleased; app hides this version in production builds, shows it in dev only.
+	published: t.Boolean(),
 });
 
 export const QuranManifestResponse = t.Object({
