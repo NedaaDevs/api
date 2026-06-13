@@ -8,25 +8,22 @@ const app = new Elysia().group("/v3", (app) => app.use(quranModule));
 // Fixed preview page set, identical across all versions (see quran-preview.ts).
 const PREVIEW_PAGES = [1, 2, 302];
 
-// biome-ignore lint/suspicious/noExplicitAny: test traverses dynamic JSON body
-type AnyVersion = any;
-
-async function getManifest() {
-	const response = await app.handle(
-		new Request("http://localhost/v3/quran/manifest"),
-	);
-	return { response, body: await response.json() };
-}
-
 describe("GET /v3/quran/manifest", () => {
 	test("returns 200 with manifest", async () => {
-		const { response, body } = await getManifest();
+		const response = await app.handle(
+			new Request("http://localhost/v3/quran/manifest"),
+		);
 		expect(response.status).toBe(200);
+
+		const body = await response.json();
 		expect(body.manifestVersion).toBe(1);
 	});
 
 	test("returns all versions", async () => {
-		const { body } = await getManifest();
+		const response = await app.handle(
+			new Request("http://localhost/v3/quran/manifest"),
+		);
+		const body = await response.json();
 
 		expect(body.versions).toBeArray();
 		expect(body.versions.length).toBeGreaterThanOrEqual(1);
@@ -37,104 +34,93 @@ describe("GET /v3/quran/manifest", () => {
 		expect(ids).toContain("v4");
 	});
 
-	test("each version has required top-level fields", async () => {
-		const { body } = await getManifest();
+	test("each version has required fields", async () => {
+		const response = await app.handle(
+			new Request("http://localhost/v3/quran/manifest"),
+		);
+		const body = await response.json();
 
-		for (const version of body.versions as AnyVersion[]) {
+		for (const version of body.versions) {
 			expect(version.id).toBeString();
 			expect(version.name).toBeString();
 			expect(version.totalPages).toBeNumber();
 			expect(version.linesPerPage).toBeNumber();
+			expect(version.imageWidth).toBeNumber();
+			expect(version.imageHeight).toBeNumber();
+			expect(version.totalSizeMB).toBeNumber();
+			expect(version.baseUrl).toBeString();
+			expect(version.bundle).toBeDefined();
+			expect(version.bundle.path).toBeString();
+			expect(version.bundle.sizeMB).toBeNumber();
+			expect(version.bundle.checksum).toBeString();
 			expect(version.markers).toBeArray();
-			expect(version.resolutions).toBeArray();
-			expect(version.resolutions.length).toBeGreaterThanOrEqual(1);
+			expect(version.manifestChecksum).toBeString();
 		}
 	});
 
-	test("each resolution entry is self-contained", async () => {
-		const { body } = await getManifest();
+	test("only v4 ships a dark bundle, mirroring the light bundle shape", async () => {
+		const response = await app.handle(
+			new Request("http://localhost/v3/quran/manifest"),
+		);
+		const body = await response.json();
 
-		for (const version of body.versions as AnyVersion[]) {
-			for (const res of version.resolutions) {
-				expect(res.width).toBeNumber();
-				expect(res.imageHeight).toBeNumber();
-				expect(res.totalSizeMB).toBeNumber();
-				expect(res.baseUrl).toBeString();
-				expect(res.bundle).toBeDefined();
-				expect(res.bundle.path).toBeString();
-				expect(res.bundle.sizeMB).toBeNumber();
-				expect(res.bundle.checksum).toBeString();
-				expect(res.manifestChecksum).toBeString();
-			}
-		}
-	});
-
-	test("only v4 ships a dark bundle, on every resolution", async () => {
-		const { body } = await getManifest();
 		const byId = (id: string) =>
-			(body.versions as AnyVersion[]).find((v) => v.id === id);
+			body.versions.find((v: { id: string }) => v.id === id);
 
-		for (const res of byId("v1").resolutions) {
-			expect(res.darkBundle).toBeUndefined();
-		}
-		for (const res of byId("v2").resolutions) {
-			expect(res.darkBundle).toBeUndefined();
-		}
-		for (const res of byId("v4").resolutions) {
-			expect(res.darkBundle).toBeDefined();
-			expect(res.darkBundle.path).toBeString();
-			expect(res.darkBundle.sizeMB).toBeNumber();
-			expect(res.darkBundle.checksum).toBeString();
+		expect(byId("v1").darkBundle).toBeUndefined();
+		expect(byId("v2").darkBundle).toBeUndefined();
+
+		const v4Dark = byId("v4").darkBundle;
+		expect(v4Dark).toBeDefined();
+		expect(v4Dark.path).toBeString();
+		expect(v4Dark.sizeMB).toBeNumber();
+		expect(v4Dark.checksum).toBeString();
+	});
+
+	test("baseUrl uses CDN_URL", async () => {
+		const response = await app.handle(
+			new Request("http://localhost/v3/quran/manifest"),
+		);
+		const body = await response.json();
+
+		for (const version of body.versions) {
+			expect(version.baseUrl).toStartWith(env.CDN_URL);
+			expect(version.baseUrl).toContain(`/quran/${version.id}`);
 		}
 	});
 
-	test("each resolution baseUrl uses CDN_URL and includes id + width", async () => {
-		const { body } = await getManifest();
-
-		for (const version of body.versions as AnyVersion[]) {
-			for (const res of version.resolutions) {
-				expect(res.baseUrl).toStartWith(env.CDN_URL);
-				expect(res.baseUrl).toContain(`/quran/${version.id}/${res.width}`);
-			}
-		}
-	});
-
-	test("every resolution has previews for the fixed page set", async () => {
-		const { body } = await getManifest();
-		for (const version of body.versions as AnyVersion[]) {
-			for (const res of version.resolutions) {
-				expect(res.previews).toBeArray();
-				expect(res.previews.map((p: { page: number }) => p.page)).toEqual(
-					PREVIEW_PAGES,
-				);
-				for (const p of res.previews) {
-					expect(p.path).toStartWith("/previews/");
-					expect(p.width).toBeGreaterThan(0);
-					expect(p.height).toBeGreaterThan(0);
-				}
-			}
-		}
-	});
-
-	test("only v4 ships dark previews, same page set, on every resolution", async () => {
-		const { body } = await getManifest();
-		const byId = (id: string) =>
-			(body.versions as AnyVersion[]).find((v) => v.id === id);
-
-		for (const res of byId("v1").resolutions) {
-			expect(res.darkPreviews).toBeUndefined();
-		}
-		for (const res of byId("v2").resolutions) {
-			expect(res.darkPreviews).toBeUndefined();
-		}
-		for (const res of byId("v4").resolutions) {
-			expect(res.darkPreviews).toBeArray();
-			expect(res.darkPreviews.map((p: { page: number }) => p.page)).toEqual(
+	test("every version has previews for the fixed page set", async () => {
+		const response = await app.handle(
+			new Request("http://localhost/v3/quran/manifest"),
+		);
+		const body = await response.json();
+		for (const version of body.versions) {
+			expect(version.previews).toBeArray();
+			expect(version.previews.map((p: { page: number }) => p.page)).toEqual(
 				PREVIEW_PAGES,
 			);
-			for (const p of res.darkPreviews) {
-				expect(p.path).toMatch(/^\/previews\/\d{3}-dark\.\w+$/);
+			for (const p of version.previews) {
+				expect(p.path).toStartWith("/previews/");
+				expect(p.width).toBeGreaterThan(0);
+				expect(p.height).toBeGreaterThan(0);
 			}
+		}
+	});
+
+	test("only v4 ships dark previews, same page set", async () => {
+		const response = await app.handle(
+			new Request("http://localhost/v3/quran/manifest"),
+		);
+		const body = await response.json();
+		const byId = (id: string) =>
+			body.versions.find((v: { id: string }) => v.id === id);
+		expect(byId("v1").darkPreviews).toBeUndefined();
+		expect(byId("v2").darkPreviews).toBeUndefined();
+		const v4Dark = byId("v4").darkPreviews;
+		expect(v4Dark).toBeArray();
+		expect(v4Dark.map((p: { page: number }) => p.page)).toEqual(PREVIEW_PAGES);
+		for (const p of v4Dark) {
+			expect(p.path).toMatch(/^\/previews\/\d{3}-dark\.\w+$/);
 		}
 	});
 });
