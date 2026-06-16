@@ -13,12 +13,16 @@ export const locationsModule = new Elysia({
 		tags: ["Locations"],
 	},
 })
+	.model({
+		"Locations.ReverseGeocodeQuery": ReverseGeocodeQuery,
+		"Locations.ReverseGeocode": ReverseGeocodeResponse,
+	})
 	.use(locationRateLimit)
 	.get(
 		"/reverse-geocode",
 		({ query }) => LocationsService.reverseGeocode(query),
 		{
-			response: ReverseGeocodeResponse,
-			query: ReverseGeocodeQuery,
+			response: "Locations.ReverseGeocode",
+			query: "Locations.ReverseGeocodeQuery",
 		},
 	);

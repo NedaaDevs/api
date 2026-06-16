@@ -13,21 +13,26 @@ export const statsModule = new Elysia({
 	detail: {
 		tags: ["Stats"],
 	},
-}).get(
-	"/summary",
-	({ query }) => StatsService.getSummary(query.period ?? "24h"),
-	{
-		query: StatsPeriodQuery,
-		response: StatsSummaryResponse,
-		beforeHandle({ headers }) {
-			const origin = headers.origin ?? "";
-			const isNedaa =
-				origin === "https://nedaa.dev" || origin === "https://www.nedaa.dev";
-			const isAdmin = headers["x-admin-key"] === env.ADMIN_API_KEY;
+})
+	.model({
+		"Stats.PeriodQuery": StatsPeriodQuery,
+		"Stats.Summary": StatsSummaryResponse,
+	})
+	.get(
+		"/summary",
+		({ query }) => StatsService.getSummary(query.period ?? "24h"),
+		{
+			query: "Stats.PeriodQuery",
+			response: "Stats.Summary",
+			beforeHandle({ headers }) {
+				const origin = headers.origin ?? "";
+				const isNedaa =
+					origin === "https://nedaa.dev" || origin === "https://www.nedaa.dev";
+				const isAdmin = headers["x-admin-key"] === env.ADMIN_API_KEY;
 
-			if (!isNedaa && !isAdmin) {
-				throw new AppError("Unauthorized", 401, CODES.UNAUTHORIZED);
-			}
+				if (!isNedaa && !isAdmin) {
+					throw new AppError("Unauthorized", 401, CODES.UNAUTHORIZED);
+				}
+			},
 		},
-	},
-);
+	);

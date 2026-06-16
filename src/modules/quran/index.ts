@@ -8,8 +8,8 @@ export const quranModule = new Elysia({
 	detail: {
 		tags: ["Quran"],
 	},
-}).get("/manifest", () => QuranService.getManifest(), {
-	response: {
-		200: QuranManifestResponse,
-	},
-});
+})
+	.model({ "Quran.Manifest": QuranManifestResponse })
+	.get("/manifest", () => QuranService.getManifest(), {
+		response: "Quran.Manifest",
+	});

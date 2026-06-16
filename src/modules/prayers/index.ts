@@ -15,6 +15,11 @@ export const prayerModule = new Elysia({
 		tags: ["Prayers"],
 	},
 })
+	.model({
+		"Prayers.Query": PrayerTimesQuery,
+		"Prayers.Times": PrayerTimesResponse,
+		"Prayers.Providers": AdapterListResponse,
+	})
 	.get(
 		"/",
 		({ query }) => {
@@ -29,11 +34,11 @@ export const prayerModule = new Elysia({
 			});
 		},
 		{
-			query: PrayerTimesQuery,
-			response: PrayerTimesResponse,
+			query: "Prayers.Query",
+			response: "Prayers.Times",
 		},
 	)
 
 	.get("/providers", () => PrayersService.getProviders(), {
-		response: AdapterListResponse,
+		response: "Prayers.Providers",
 	});
