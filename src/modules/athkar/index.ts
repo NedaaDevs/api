@@ -13,14 +13,19 @@ export const athkarModule = new Elysia({
 		tags: ["Athkar"],
 	},
 })
+	.model({
+		"Athkar.Catalog": ReciterCatalogResponse,
+		"Athkar.Manifest": ReciterManifestResponse,
+		"Athkar.IdParam": ReciterIdParam,
+	})
 	.get("/reciters", () => AthkarService.getCatalog(), {
-		response: ReciterCatalogResponse,
+		response: "Athkar.Catalog",
 	})
 	.get(
 		"/reciters/:id/manifest",
 		({ params }) => AthkarService.getManifest(params.id),
 		{
-			params: ReciterIdParam,
-			response: ReciterManifestResponse,
+			params: "Athkar.IdParam",
+			response: "Athkar.Manifest",
 		},
 	);

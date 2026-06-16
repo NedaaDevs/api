@@ -51,8 +51,12 @@ export const healthModule = new Elysia({
 		tags: ["Health"],
 	},
 })
+	.model({
+		"Health.Status": healthSchema,
+		"Health.CacheClear": cacheClearResponse,
+	})
 	.get("/", getHealth, {
-		response: healthSchema,
+		response: "Health.Status",
 	})
 	.delete(
 		"/cache",
@@ -71,7 +75,7 @@ export const healthModule = new Elysia({
 			};
 		},
 		{
-			response: cacheClearResponse,
+			response: "Health.CacheClear",
 			beforeHandle({ headers }) {
 				if (headers["x-admin-key"] !== env.ADMIN_API_KEY) {
 					throw new AppError("Unauthorized", 401, CODES.UNAUTHORIZED);
