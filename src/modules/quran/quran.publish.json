@@ -1,0 +1,232 @@
+{
+	"editions": {
+		"v1": {
+			"images": {
+				"version": "2026-06-16",
+				"pages": 604,
+				"light": {
+					"url": "v1/1440/images-light-2026-06-16.zip",
+					"bytes": 97647827,
+					"sha256": "8d738dc289a2c19e0659dfb2381a2d6af7a67bcfe9a056f52c75511d591da1fb"
+				}
+			},
+			"meta": {
+				"version": "2026-06-16",
+				"schema": 0,
+				"requiresImages": "2026-06-16",
+				"url": "v1/1440/meta-2026-06-16.zip",
+				"bytes": 4796584,
+				"sha256": "053b1e3455c1ebc00fe704d5ef69db01669ab42fee175f1f312b737eb228ff13"
+			},
+			"previews": [
+				{
+					"page": 1,
+					"url": "v1/1440/previews/001.webp",
+					"width": 1440,
+					"height": 3480
+				},
+				{
+					"page": 2,
+					"url": "v1/1440/previews/002.webp",
+					"width": 1440,
+					"height": 3480
+				},
+				{
+					"page": 302,
+					"url": "v1/1440/previews/302.webp",
+					"width": 1440,
+					"height": 3480
+				}
+			]
+		},
+		"v2": {
+			"images": {
+				"version": "2026-06-16",
+				"pages": 604,
+				"light": {
+					"url": "v2/1440/images-light-2026-06-16.zip",
+					"bytes": 109213102,
+					"sha256": "0645232231a8db7182676189e97591369eeae38e113971623a273652cad2bb0b"
+				}
+			},
+			"meta": {
+				"version": "2026-06-16",
+				"schema": 0,
+				"requiresImages": "2026-06-16",
+				"url": "v2/1440/meta-2026-06-16.zip",
+				"bytes": 4800680,
+				"sha256": "4a653c982275f4ccf21e005d66d46a2cc0bd397f7b76757eecaa8a1d3778ed29"
+			},
+			"previews": [
+				{
+					"page": 1,
+					"url": "v2/1440/previews/001.webp",
+					"width": 1440,
+					"height": 3480
+				},
+				{
+					"page": 2,
+					"url": "v2/1440/previews/002.webp",
+					"width": 1440,
+					"height": 3480
+				},
+				{
+					"page": 302,
+					"url": "v2/1440/previews/302.webp",
+					"width": 1440,
+					"height": 3480
+				}
+			]
+		},
+		"v4": {
+			"images": {
+				"version": "2026-06-16",
+				"pages": 604,
+				"light": {
+					"url": "v4/1440/images-light-2026-06-16.zip",
+					"bytes": 93138204,
+					"sha256": "2777661c894e7e88362d66a377740e905d4eabf093ea46605cc6352d82f9bbd4"
+				},
+				"dark": {
+					"url": "v4/1440/images-dark-2026-06-16.zip",
+					"bytes": 97368601,
+					"sha256": "649069e9f43d44239f653830c179e099a34b9e9a9b7044ffc792c9562c4959f7"
+				}
+			},
+			"meta": {
+				"version": "2026-06-16",
+				"schema": 2,
+				"requiresImages": "2026-06-16",
+				"url": "v4/1440/meta-2026-06-16.zip",
+				"bytes": 5181608,
+				"sha256": "972ac358bfe6025bc3e7ae5241fea9bb4becbb69ddf872152d6818000ef10540"
+			},
+			"previews": [
+				{
+					"page": 1,
+					"url": "v4/1440/previews/001.webp",
+					"width": 1440,
+					"height": 3480
+				},
+				{
+					"page": 2,
+					"url": "v4/1440/previews/002.png",
+					"width": 1440,
+					"height": 3480
+				},
+				{
+					"page": 302,
+					"url": "v4/1440/previews/302.png",
+					"width": 1440,
+					"height": 3480
+				}
+			],
+			"darkPreviews": [
+				{
+					"page": 1,
+					"url": "v4/1440/previews/001-dark.webp",
+					"width": 1440,
+					"height": 3480
+				},
+				{
+					"page": 2,
+					"url": "v4/1440/previews/002-dark.webp",
+					"width": 1440,
+					"height": 3480
+				},
+				{
+					"page": 302,
+					"url": "v4/1440/previews/302-dark.png",
+					"width": 1440,
+					"height": 3480
+				}
+			]
+		}
+	},
+	"ornaments": {
+		"ayahMarker": {
+			"default": "classic",
+			"options": [
+				{
+					"id": "v1",
+					"version": "2026-06-16",
+					"resolution": 1440,
+					"editions": ["v1"],
+					"url": "ornaments/ayah-marker/v1-2026-06-16.zip",
+					"bytes": 19069,
+					"sha256": "a7866d95e69bd5a0559ecf856be724d8873ce30d7a081e78e9ec940b1824db0e",
+					"preview": "ornaments/ayah-marker/v1-preview-2026-06-16.png"
+				},
+				{
+					"id": "v2",
+					"version": "2026-06-16",
+					"resolution": 1440,
+					"editions": ["v2"],
+					"url": "ornaments/ayah-marker/v2-2026-06-16.zip",
+					"bytes": 18703,
+					"sha256": "330254b8977864027c0e6de5f94e7e8087de12ee5a7d8741e99cd33f1616d827",
+					"preview": "ornaments/ayah-marker/v2-preview-2026-06-16.png"
+				},
+				{
+					"id": "v4",
+					"version": "2026-06-16",
+					"resolution": 1440,
+					"editions": ["v4"],
+					"url": "ornaments/ayah-marker/v4-2026-06-16.zip",
+					"bytes": 19576,
+					"sha256": "13d948bf2267466cc3e4764c73a10ec1ca9c0afaf4bba824fbf2cad944a7d8e0",
+					"preview": "ornaments/ayah-marker/v4-preview-2026-06-16.png"
+				}
+			],
+			"defaultByEdition": {
+				"v1": "v1",
+				"v2": "v2",
+				"v4": "v4"
+			}
+		},
+		"surahFrame": {
+			"default": "cartouche",
+			"options": [
+				{
+					"id": "v1",
+					"version": "2026-06-16",
+					"resolution": 1440,
+					"editions": ["v1"],
+					"url": "ornaments/surah-frame/v1-2026-06-16.zip",
+					"bytes": 11330,
+					"sha256": "cff0189011797b6e9804b7997a8dad6351a6e164fd8b5367df96d1ccdedb6ffd",
+					"preview": "ornaments/surah-frame/v1-preview-2026-06-16.png"
+				},
+				{
+					"id": "v2",
+					"version": "2026-06-16",
+					"resolution": 1440,
+					"editions": ["v2"],
+					"url": "ornaments/surah-frame/v2-2026-06-16.zip",
+					"bytes": 11330,
+					"sha256": "1374945bd3db94d20f997a924c14d8b6a0f846808f10eef86ca02576eb0f8ad5",
+					"preview": "ornaments/surah-frame/v2-preview-2026-06-16.png"
+				},
+				{
+					"id": "v4",
+					"version": "2026-06-16",
+					"resolution": 1440,
+					"editions": ["v4"],
+					"url": "ornaments/surah-frame/v4-2026-06-16.zip",
+					"bytes": 11330,
+					"sha256": "da44f9c070bba4adbdd3b1903f9b15a1c46152eeee17a5ac2386bf1b5e90d820",
+					"preview": "ornaments/surah-frame/v4-preview-2026-06-16.png"
+				}
+			],
+			"defaultByEdition": {
+				"v1": "v1",
+				"v2": "v2",
+				"v4": "v4"
+			}
+		},
+		"pageHolder": {
+			"default": "medallion",
+			"options": []
+		}
+	}
+}

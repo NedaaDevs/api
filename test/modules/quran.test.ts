@@ -5,68 +5,135 @@ import { quranModule } from "@/modules/quran";
 
 const app = new Elysia().group("/v3", (app) => app.use(quranModule));
 
-describe("GET /v3/quran/manifest", () => {
-	test("returns 200 with manifest", async () => {
-		const response = await app.handle(
-			new Request("http://localhost/v3/quran/manifest"),
-		);
-		expect(response.status).toBe(200);
+// Fixed preview page set, identical across all versions (see quran-preview.ts).
+const PREVIEW_PAGES = [1, 2, 302];
 
-		const body = await response.json();
-		expect(body.manifestVersion).toBe(1);
+const getManifest = async () => {
+	const response = await app.handle(
+		new Request("http://localhost/v3/quran/manifest"),
+	);
+	// body is dynamic JSON (any) — kept loose so edition/ornament access is free.
+	const body = await response.json();
+	return { response, body };
+};
+
+const byId = (body: { editions: { id: string }[] }, id: string) =>
+	// biome-ignore lint/suspicious/noExplicitAny: dynamic manifest JSON under test
+	(body.editions as any[]).find((e) => e.id === id);
+
+describe("GET /v3/quran/manifest", () => {
+	test("returns 200 with the new manifest shape", async () => {
+		const { response, body } = await getManifest();
+		expect(response.status).toBe(200);
+		expect(body.manifestSchema).toBe(1);
+		expect(body.baseUrl).toStartWith(env.CDN_URL);
+		expect(body.baseUrl).toEndWith("/quran");
 	});
 
-	test("returns all versions", async () => {
-		const response = await app.handle(
-			new Request("http://localhost/v3/quran/manifest"),
-		);
-		const body = await response.json();
-
-		expect(body.versions).toBeArray();
-		expect(body.versions.length).toBeGreaterThanOrEqual(1);
-
-		const ids = body.versions.map((v: { id: string }) => v.id);
+	test("returns all editions", async () => {
+		const { body } = await getManifest();
+		expect(body.editions).toBeArray();
+		const ids = body.editions.map((e: { id: string }) => e.id);
 		expect(ids).toContain("v1");
 		expect(ids).toContain("v2");
 		expect(ids).toContain("v4");
 	});
 
-	test("each version has required fields", async () => {
-		const response = await app.handle(
-			new Request("http://localhost/v3/quran/manifest"),
-		);
-		const body = await response.json();
+	test("each edition has identity + image/meta layers", async () => {
+		const { body } = await getManifest();
+		for (const e of body.editions) {
+			expect(e.id).toBeString();
+			expect(e.name).toBeString();
+			expect(e.imageType).toBe("line");
+			expect(e.resolution).toBeNumber();
+			expect(e.yearHijri).toBeNumber();
+			expect(e.yearGregorian).toBeNumber();
+			expect(e.linesPerPage).toBeNumber();
+			expect(e.published).toBeBoolean();
 
-		for (const version of body.versions) {
-			expect(version.id).toBeString();
-			expect(version.name).toBeString();
-			expect(version.totalPages).toBeNumber();
-			expect(version.linesPerPage).toBeNumber();
-			expect(version.imageWidth).toBeNumber();
-			expect(version.imageHeight).toBeNumber();
-			expect(version.totalSizeMB).toBeNumber();
-			expect(version.boundsDbSizeMB).toBeNumber();
-			expect(version.baseUrl).toBeString();
-			expect(version.paths).toBeDefined();
-			expect(version.paths.lines).toBeString();
-			expect(version.paths.boundsDb).toBeString();
-			expect(version.paths.markers).toBeString();
-			expect(version.markers).toBeArray();
-			expect(version.checksums).toBeDefined();
-			expect(version.checksums.boundsDb).toBeString();
-			expect(version.checksums.manifest).toBeString();
+			// Images layer (per theme), version-tagged + integrity-hashed.
+			expect(e.images.version).toBeString();
+			expect(e.images.pages).toBeNumber();
+			expect(e.images.light.url).toContain(`${e.id}/`);
+			expect(e.images.light.bytes).toBeGreaterThan(0);
+			expect(e.images.light.sha256).toBeString();
+
+			// Meta layer mirrors bounds.db and declares its image floor.
+			expect(e.meta.version).toBeString();
+			expect(e.meta.schema).toBeNumber();
+			expect(e.meta.requiresImages).toBeString();
+			expect(e.meta.url).toContain(`${e.id}/`);
+			expect(e.meta.sha256).toBeString();
 		}
 	});
 
-	test("baseUrl uses CDN_URL", async () => {
-		const response = await app.handle(
-			new Request("http://localhost/v3/quran/manifest"),
-		);
-		const body = await response.json();
+	test("only v4 ships a dark image set", async () => {
+		const { body } = await getManifest();
+		expect(byId(body, "v1").images.dark).toBeUndefined();
+		expect(byId(body, "v2").images.dark).toBeUndefined();
 
-		for (const version of body.versions) {
-			expect(version.baseUrl).toStartWith(env.CDN_URL);
-			expect(version.baseUrl).toContain(`/quran/${version.id}`);
+		const dark = byId(body, "v4").images.dark;
+		expect(dark.url).toContain("images-dark");
+		expect(dark.bytes).toBeGreaterThan(0);
+		expect(dark.sha256).toBeString();
+	});
+
+	test("artifact urls resolve against baseUrl (relative paths)", async () => {
+		const { body } = await getManifest();
+		for (const e of body.editions) {
+			expect(e.images.light.url).not.toStartWith("http");
+			expect(e.images.light.url).not.toStartWith("/");
+			expect(e.meta.url).not.toStartWith("/");
+		}
+	});
+
+	test("every edition has previews for the fixed page set", async () => {
+		const { body } = await getManifest();
+		for (const e of body.editions) {
+			expect(e.previews.map((p: { page: number }) => p.page)).toEqual(
+				PREVIEW_PAGES,
+			);
+			for (const p of e.previews) {
+				expect(p.url).toContain(`${e.id}/`);
+				expect(p.url).toContain("/previews/");
+				expect(p.width).toBeGreaterThan(0);
+				expect(p.height).toBeGreaterThan(0);
+			}
+		}
+	});
+
+	test("only v4 ships dark previews, same page set", async () => {
+		const { body } = await getManifest();
+		expect(byId(body, "v1").darkPreviews).toBeUndefined();
+		expect(byId(body, "v2").darkPreviews).toBeUndefined();
+
+		const v4Dark = byId(body, "v4").darkPreviews;
+		expect(v4Dark.map((p: { page: number }) => p.page)).toEqual(PREVIEW_PAGES);
+		for (const p of v4Dark) {
+			expect(p.url).toMatch(/\/previews\/\d{3}-dark\.\w+$/);
+		}
+	});
+
+	test("ornaments expose the three categories", async () => {
+		const { body } = await getManifest();
+		for (const cat of ["ayahMarker", "surahFrame", "pageHolder"]) {
+			expect(body.ornaments[cat].default).toBeString();
+			expect(body.ornaments[cat].options).toBeArray();
+		}
+	});
+
+	test("marker ornaments are scoped to their own edition", async () => {
+		const { body } = await getManifest();
+		for (const cat of ["ayahMarker", "surahFrame"]) {
+			const group = body.ornaments[cat];
+			// Each version contributes a native pack compatible with itself only.
+			for (const id of ["v1", "v2", "v4"]) {
+				const opt = group.options.find((o: { id: string }) => o.id === id);
+				expect(opt.editions).toEqual([id]);
+				expect(opt.resolution).toBeNumber();
+				expect(opt.sha256).toBeString();
+				expect(group.defaultByEdition[id]).toBe(id);
+			}
 		}
 	});
 });
