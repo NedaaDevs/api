@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { Elysia } from "elysia";
 import { env } from "@/config/env";
 import { quranModule } from "@/modules/quran";
+import { QuranManifestResponse } from "@/modules/quran/quran.schemas";
 
 const app = new Elysia().group("/v3", (app) => app.use(quranModule));
 
@@ -25,7 +26,7 @@ describe("GET /v3/quran/manifest", () => {
 	test("returns 200 with the new manifest shape", async () => {
 		const { response, body } = await getManifest();
 		expect(response.status).toBe(200);
-		expect(body.manifestSchema).toBe(1);
+		expect(body.manifestSchema).toBe(2);
 		expect(body.baseUrl).toStartWith(env.CDN_URL);
 		expect(body.baseUrl).toEndWith("/quran");
 	});
@@ -135,5 +136,41 @@ describe("GET /v3/quran/manifest", () => {
 				expect(group.defaultByEdition[id]).toBe(id);
 			}
 		}
+	});
+
+	test("manifest schema accepts an optional top-level content layer", async () => {
+		// quran.db is shared across editions, so `content` lives at the manifest
+		// top level. It is absent from the live manifest until an upload populates
+		// quran.publish.json — so validate the SHAPE via the same response model
+		// the real route uses, rather than asserting presence on the live manifest.
+		const probe = new Elysia()
+			.model({ "Quran.Manifest": QuranManifestResponse })
+			.get(
+				"/m",
+				() => ({
+					manifestSchema: 2,
+					baseUrl: `${env.CDN_URL}/quran`,
+					editions: [],
+					ornaments: {
+						ayahMarker: { default: "classic", options: [] },
+						surahFrame: { default: "cartouche", options: [] },
+						pageHolder: { default: "medallion", options: [] },
+					},
+					content: {
+						version: "2026-06-16",
+						schema: 2,
+						url: "content/quran-2026-06-16.zip",
+						bytes: 4096,
+						sha256: "abc123",
+					},
+				}),
+				{ response: "Quran.Manifest" },
+			);
+		const res = await probe.handle(new Request("http://localhost/m"));
+		expect(res.status).toBe(200);
+		const body = await res.json();
+		expect(body.content.url).toBe("content/quran-2026-06-16.zip");
+		expect(body.content.schema).toBe(2);
+		expect(body.content.sha256).toBe("abc123");
 	});
 });

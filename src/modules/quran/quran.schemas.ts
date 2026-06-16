@@ -91,11 +91,25 @@ const OrnamentsSchema = t.Object({
 	pageHolder: OrnamentCategorySchema,
 });
 
+// Content layer — quran.db (ayah text + FTS5 search, surah/division metadata,
+// mushaf layout/words, mutashabihat). Shared across ALL editions (unlike
+// bounds.db, which is per-edition), so it lives at the manifest top level.
+const ContentSchema = t.Object({
+	version: t.String(), // ISO-8601 date publish tag
+	// == quran.db db_meta.schema_version (key/value table, not PRAGMA).
+	schema: t.Integer({ minimum: 0 }),
+	url: t.String(), // path relative to manifest.baseUrl
+	bytes: t.Integer({ minimum: 0 }),
+	sha256: t.String(),
+});
+
 export const QuranManifestResponse = t.Object({
 	manifestSchema: t.Number(), // manifest format version (distinct from edition.meta.schema)
 	baseUrl: t.String(), // artifact urls are resolved against this
 	editions: t.Array(EditionSchema), // ordered — display order is listing order
 	ornaments: OrnamentsSchema,
+	// Shared Quran content DB; absent until the content layer has been uploaded.
+	content: t.Optional(ContentSchema),
 });
 
 export type QuranManifest = Static<typeof QuranManifestResponse>;
@@ -106,3 +120,4 @@ export type QuranArtifact = Static<typeof ArtifactSchema>;
 export type QuranPreview = Static<typeof PreviewSchema>;
 export type QuranOrnaments = Static<typeof OrnamentsSchema>;
 export type QuranOrnamentOption = Static<typeof OrnamentOptionSchema>;
+export type QuranContent = Static<typeof ContentSchema>;

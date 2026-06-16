@@ -228,5 +228,12 @@
 			"default": "medallion",
 			"options": []
 		}
+	},
+	"content": {
+		"version": "2026-06-16",
+		"schema": 2,
+		"url": "content/quran-2026-06-16.zip",
+		"bytes": 3149994,
+		"sha256": "2efe8a20df785ea0a9a161fea6e15fb6883242b9ac68e41ebb3ba25ce24d95c9"
 	}
 }
