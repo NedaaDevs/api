@@ -1,6 +1,7 @@
 import { env } from "@/config/env";
 import publishData from "./quran.publish.json";
 import type {
+	QuranContent,
 	QuranEdition,
 	QuranManifest,
 	QuranOrnaments,
@@ -17,6 +18,7 @@ type EditionPublish = Pick<
 const publish = publishData as {
 	editions: Record<string, EditionPublish>;
 	ornaments: QuranOrnaments;
+	content?: QuranContent;
 };
 
 // Static, resolution-independent edition identity. Publish data (images/meta/
@@ -75,10 +77,12 @@ const editions = IDENTITY.flatMap((identity): QuranEdition[] => {
 });
 
 const MANIFEST: QuranManifest = {
-	manifestSchema: 1,
+	manifestSchema: 2,
 	baseUrl: quranBase,
 	editions,
 	ornaments: publish.ornaments,
+	// Omitted entirely until quran.publish.json carries a content block.
+	...(publish.content && { content: publish.content }),
 };
 
 // biome-ignore lint/complexity/noStaticOnlyClass: follows existing service pattern
