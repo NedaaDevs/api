@@ -5,7 +5,7 @@ services:
   nedaa-api-new:
     image: ghcr.io/nedaadevs/api:latest
     ports:
-      - "3004:3004"
+      - "${PORT:-3004}:3004"
     environment:
       - NODE_ENV=production
       - BDC_API_KEY=${BDC_API_KEY}
