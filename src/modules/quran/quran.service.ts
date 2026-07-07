@@ -1,5 +1,6 @@
 import { env } from "@/config/env";
-import publishData from "./quran.publish.json";
+import { audio } from "@/modules/quran/quran.audio";
+import publishData from "@/modules/quran/quran.publish.json";
 import type {
 	QuranContent,
 	QuranEdition,
@@ -9,8 +10,6 @@ import type {
 
 const quranBase = `${env.CDN_URL}/quran`;
 
-// Generated publish data: per-edition image/meta/preview artifacts + ornaments.
-// Identity (below) is merged in to form a full edition.
 type EditionPublish = Pick<
 	QuranEdition,
 	"images" | "meta" | "previews" | "darkPreviews"
@@ -83,6 +82,7 @@ const MANIFEST: QuranManifest = {
 	ornaments: publish.ornaments,
 	// Omitted entirely until quran.publish.json carries a content block.
 	...(publish.content && { content: publish.content }),
+	audio,
 };
 
 // biome-ignore lint/complexity/noStaticOnlyClass: follows existing service pattern

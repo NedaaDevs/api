@@ -103,6 +103,45 @@ const ContentSchema = t.Object({
 	sha256: t.String(),
 });
 
+// Position->ayah timings; surah-granular (gapless) recitations only.
+const AudioTimingsSchema = t.Object({
+	url: t.String(), // relative to manifest.baseUrl
+	version: t.String(),
+	bytes: t.Integer({ minimum: 0 }),
+});
+
+// A reciter's complete audio set in one style. `granularity` "ayah" = per-ayah
+// files (reader + listen); "surah" = one gapless file per surah (listen-only).
+const RecitationSchema = t.Object({
+	id: t.String(), // recitation slug; also the R2 folder (e.g. "minshawi-murattal")
+	style: t.String(), // "Murattal" | "Mujawwad" | "Tajweed" | ...
+	riwayah: t.String(), // "hafs" | ...
+	granularity: t.Union([t.Literal("ayah"), t.Literal("surah")]),
+	// Audio folder relative to baseUrl. ayah -> `<basePath><surah>_<ayah>.mp3` +
+	// `<basePath>bundles/<surah>.zip`; surah -> `<basePath><surah>.mp3`.
+	basePath: t.String(),
+	fileFormat: t.Literal("mp3"),
+	ayahCount: t.Integer({ minimum: 1 }),
+	bytesApprox: t.Integer({ minimum: 0 }), // total mirrored size; 0 until mirrored
+	published: t.Boolean(), // hidden in production until true; shown in __DEV__
+	timings: t.Optional(AudioTimingsSchema),
+});
+
+// A reciter (person) grouping one or more recitations (styles).
+const AudioReciterSchema = t.Object({
+	id: t.String(), // person slug, e.g. "minshawi"
+	nameArabic: t.String(),
+	nameEnglish: t.String(),
+	recitations: t.Array(RecitationSchema), // ordered = display order
+});
+
+// Audio catalog; own `version` so adding recitations bumps only this block.
+const AudioSchema = t.Object({
+	version: t.String(),
+	defaultRecitationId: t.String(), // the app's initial selection
+	reciters: t.Array(AudioReciterSchema), // ordered = display order
+});
+
 export const QuranManifestResponse = t.Object({
 	manifestSchema: t.Number(), // manifest format version (distinct from edition.meta.schema)
 	baseUrl: t.String(), // artifact urls are resolved against this
@@ -110,6 +149,8 @@ export const QuranManifestResponse = t.Object({
 	ornaments: OrnamentsSchema,
 	// Shared Quran content DB; absent until the content layer has been uploaded.
 	content: t.Optional(ContentSchema),
+	// Recitation audio; absent until at least one reciter is defined.
+	audio: t.Optional(AudioSchema),
 });
 
 export type QuranManifest = Static<typeof QuranManifestResponse>;
@@ -121,3 +162,6 @@ export type QuranPreview = Static<typeof PreviewSchema>;
 export type QuranOrnaments = Static<typeof OrnamentsSchema>;
 export type QuranOrnamentOption = Static<typeof OrnamentOptionSchema>;
 export type QuranContent = Static<typeof ContentSchema>;
+export type QuranAudio = Static<typeof AudioSchema>;
+export type QuranAudioReciter = Static<typeof AudioReciterSchema>;
+export type QuranRecitation = Static<typeof RecitationSchema>;
