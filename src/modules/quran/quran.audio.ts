@@ -99,6 +99,40 @@ const AUDIO_IDENTITY: ReciterIdentity[] = [
 			},
 		],
 	},
+	{
+		id: "abdul-basit-abdul-samad",
+		nameArabic: "عبد الباسط عبد الصمد",
+		nameEnglish: "Abdul Basit Abd as-Samad",
+		recitations: [
+			{
+				id: "abdul-basit-abdul-samad-murattal",
+				style: "Murattal",
+				riwayah: "hafs",
+				granularity: "ayah",
+				basePath: "audio/abdul-basit-abdul-samad-murattal/",
+				fileFormat: "mp3",
+				ayahCount: 6236,
+				published: false,
+			},
+		],
+	},
+	{
+		id: "khalifa-al-tunaiji",
+		nameArabic: "خليفة الطنيجي",
+		nameEnglish: "Khalifa Al Tunaiji",
+		recitations: [
+			{
+				id: "khalifa-al-tunaiji-murattal",
+				style: "Murattal",
+				riwayah: "hafs",
+				granularity: "ayah",
+				basePath: "audio/khalifa-al-tunaiji-murattal/",
+				fileFormat: "mp3",
+				ayahCount: 6236,
+				published: false,
+			},
+		],
+	},
 ];
 
 export const audio: QuranAudio = {
