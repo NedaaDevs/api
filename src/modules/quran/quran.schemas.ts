@@ -123,6 +123,11 @@ const RecitationSchema = t.Object({
 	fileFormat: t.Literal("mp3"),
 	ayahCount: t.Integer({ minimum: 1 }),
 	bytesApprox: t.Integer({ minimum: 0 }), // total mirrored size; 0 until mirrored
+	// Per-surah byte size, index i = surah i+1; zeros until mirrored.
+	surahBytes: t.Array(t.Integer({ minimum: 0 }), {
+		minItems: 114,
+		maxItems: 114,
+	}),
 	published: t.Boolean(), // hidden in production until true; shown in __DEV__
 	timings: t.Optional(AudioTimingsSchema),
 });

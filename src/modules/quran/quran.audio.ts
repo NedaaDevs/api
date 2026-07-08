@@ -6,13 +6,19 @@ import type {
 import publishData from "./quran.publish.json";
 
 // Measured per-recitation totals the mirror writes into quran.publish.json.
-type RecitationPublish = { bytesApprox?: number; ayahCount?: number };
+type RecitationPublish = {
+	bytesApprox?: number;
+	ayahCount?: number;
+	surahBytes?: number[];
+};
 const publish = publishData as {
 	audio?: { recitations?: Record<string, RecitationPublish> };
 };
 
+const ZERO_SURAH_BYTES: number[] = Array(114).fill(0);
+
 // Static reciter/recitation identity; measured bytesApprox/ayahCount merge below.
-type RecitationIdentity = Omit<QuranRecitation, "bytesApprox">;
+type RecitationIdentity = Omit<QuranRecitation, "bytesApprox" | "surahBytes">;
 type ReciterIdentity = Omit<QuranAudioReciter, "recitations"> & {
 	recitations: RecitationIdentity[];
 };
@@ -147,6 +153,7 @@ export const audio: QuranAudio = {
 					...rec,
 					ayahCount: measured?.ayahCount ?? rec.ayahCount,
 					bytesApprox: measured?.bytesApprox ?? 0,
+					surahBytes: measured?.surahBytes ?? ZERO_SURAH_BYTES,
 				};
 			}),
 		}),
