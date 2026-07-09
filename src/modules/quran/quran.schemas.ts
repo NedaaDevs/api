@@ -103,7 +103,9 @@ const ContentSchema = t.Object({
 	sha256: t.String(),
 });
 
-// Position->ayah timings; surah-granular (gapless) recitations only.
+// Per-word timing artifact (QUL segments) for read-along word highlighting.
+// Ayah-granular recitations only — a gapless surah file has no per-ayah offsets
+// to anchor per-word segments against.
 const AudioTimingsSchema = t.Object({
 	url: t.String(), // relative to manifest.baseUrl
 	version: t.String(),
