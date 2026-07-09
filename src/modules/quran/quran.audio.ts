@@ -289,6 +289,57 @@ const AUDIO_IDENTITY: ReciterIdentity[] = [
 			},
 		],
 	},
+	{
+		id: "hani-ar-rifai",
+		nameArabic: "هاني الرفاعي",
+		nameEnglish: "Hani ar-Rifai",
+		recitations: [
+			{
+				id: "hani-ar-rifai-recitation-murattal-hafs-68",
+				style: "Murattal",
+				riwayah: "hafs",
+				granularity: "ayah",
+				basePath: "audio/hani-ar-rifai-recitation-murattal-hafs-68/",
+				fileFormat: "mp3",
+				ayahCount: 6236,
+				published: false,
+			},
+		],
+	},
+	{
+		id: "mishari-al-afasy",
+		nameArabic: "مشاري راشد العفاسي",
+		nameEnglish: "Mishari Rashid Alafasy",
+		recitations: [
+			{
+				id: "mishari-al-afasy",
+				style: "Murattal",
+				riwayah: "hafs",
+				granularity: "surah",
+				basePath: "audio/mishari-al-afasy/",
+				fileFormat: "mp3",
+				ayahCount: 6236,
+				published: false,
+			},
+		],
+	},
+	{
+		id: "yasser-al-dosari",
+		nameArabic: "ياسر الدوسري",
+		nameEnglish: "Yasser Al-Dosari",
+		recitations: [
+			{
+				id: "yasser-al-dosari-murattal-hafs-961",
+				style: "Murattal",
+				riwayah: "hafs",
+				granularity: "ayah",
+				basePath: "audio/yasser-al-dosari-murattal-hafs-961/",
+				fileFormat: "mp3",
+				ayahCount: 6236,
+				published: false,
+			},
+		],
+	},
 ];
 
 export const audio: QuranAudio = {
