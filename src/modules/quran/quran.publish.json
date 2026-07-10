@@ -2,21 +2,21 @@
 	"editions": {
 		"v1": {
 			"images": {
-				"version": "2026-06-16",
+				"version": "2026-07-10",
 				"pages": 604,
 				"light": {
-					"url": "v1/1440/images-light-2026-06-16.zip",
-					"bytes": 97647827,
-					"sha256": "8d738dc289a2c19e0659dfb2381a2d6af7a67bcfe9a056f52c75511d591da1fb"
+					"url": "v1/1440/images-light-2026-07-10.zip",
+					"bytes": 97684363,
+					"sha256": "e1705c69a641933f7a1578c73c19d1206c1cdf1dcbdb191464285ca8b9dfc681"
 				}
 			},
 			"meta": {
-				"version": "2026-06-16",
-				"schema": 0,
-				"requiresImages": "2026-06-16",
-				"url": "v1/1440/meta-2026-06-16.zip",
-				"bytes": 4796584,
-				"sha256": "053b1e3455c1ebc00fe704d5ef69db01669ab42fee175f1f312b737eb228ff13"
+				"version": "2026-07-10",
+				"schema": 2,
+				"requiresImages": "2026-07-10",
+				"url": "v1/1440/meta-2026-07-10.zip",
+				"bytes": 5046440,
+				"sha256": "1dca5778902d9b7c4c1c230ae64828bca6e957fdcf98cc7a2fc0848aed117d73"
 			},
 			"previews": [
 				{
@@ -41,21 +41,21 @@
 		},
 		"v2": {
 			"images": {
-				"version": "2026-06-16",
+				"version": "2026-07-10",
 				"pages": 604,
 				"light": {
-					"url": "v2/1440/images-light-2026-06-16.zip",
+					"url": "v2/1440/images-light-2026-07-10.zip",
 					"bytes": 109213102,
-					"sha256": "0645232231a8db7182676189e97591369eeae38e113971623a273652cad2bb0b"
+					"sha256": "bcca42730d2c3e5d29359acb6dab30c8f513864bd14d269aec0f26104ca02768"
 				}
 			},
 			"meta": {
-				"version": "2026-06-16",
-				"schema": 0,
-				"requiresImages": "2026-06-16",
-				"url": "v2/1440/meta-2026-06-16.zip",
-				"bytes": 4800680,
-				"sha256": "4a653c982275f4ccf21e005d66d46a2cc0bd397f7b76757eecaa8a1d3778ed29"
+				"version": "2026-07-10",
+				"schema": 2,
+				"requiresImages": "2026-07-10",
+				"url": "v2/1440/meta-2026-07-10.zip",
+				"bytes": 5050536,
+				"sha256": "af142d38120d0f981c3af6a689427941241e97fdbce5c66fa0da4f0dca51cd2d"
 			},
 			"previews": [
 				{
@@ -149,23 +149,23 @@
 			"options": [
 				{
 					"id": "v1",
-					"version": "2026-06-16",
+					"version": "2026-07-10",
 					"resolution": 1440,
 					"editions": ["v1"],
-					"url": "ornaments/ayah-marker/v1-2026-06-16.zip",
+					"url": "ornaments/ayah-marker/v1-2026-07-10.zip",
 					"bytes": 19069,
-					"sha256": "a7866d95e69bd5a0559ecf856be724d8873ce30d7a081e78e9ec940b1824db0e",
-					"preview": "ornaments/ayah-marker/v1-preview-2026-06-16.png"
+					"sha256": "344951e7ceca9702ba4f65cbe9a6142b379a02d640b32d414d52c33fdbd900f2",
+					"preview": "ornaments/ayah-marker/v1-preview-2026-07-10.png"
 				},
 				{
 					"id": "v2",
-					"version": "2026-06-16",
+					"version": "2026-07-10",
 					"resolution": 1440,
 					"editions": ["v2"],
-					"url": "ornaments/ayah-marker/v2-2026-06-16.zip",
+					"url": "ornaments/ayah-marker/v2-2026-07-10.zip",
 					"bytes": 18703,
-					"sha256": "330254b8977864027c0e6de5f94e7e8087de12ee5a7d8741e99cd33f1616d827",
-					"preview": "ornaments/ayah-marker/v2-preview-2026-06-16.png"
+					"sha256": "d052fe831e9032759fb02316222ae271e883b3c9aebdde3f970d4255800385e6",
+					"preview": "ornaments/ayah-marker/v2-preview-2026-07-10.png"
 				},
 				{
 					"id": "v4",
@@ -189,23 +189,23 @@
 			"options": [
 				{
 					"id": "v1",
-					"version": "2026-06-16",
+					"version": "2026-07-10",
 					"resolution": 1440,
 					"editions": ["v1"],
-					"url": "ornaments/surah-frame/v1-2026-06-16.zip",
+					"url": "ornaments/surah-frame/v1-2026-07-10.zip",
 					"bytes": 11330,
-					"sha256": "cff0189011797b6e9804b7997a8dad6351a6e164fd8b5367df96d1ccdedb6ffd",
-					"preview": "ornaments/surah-frame/v1-preview-2026-06-16.png"
+					"sha256": "c71662f5961f05411f6f7c0d3a4bdaaccfe2b98c7f0a96b1c8c166a78b17ffb4",
+					"preview": "ornaments/surah-frame/v1-preview-2026-07-10.png"
 				},
 				{
 					"id": "v2",
-					"version": "2026-06-16",
+					"version": "2026-07-10",
 					"resolution": 1440,
 					"editions": ["v2"],
-					"url": "ornaments/surah-frame/v2-2026-06-16.zip",
+					"url": "ornaments/surah-frame/v2-2026-07-10.zip",
 					"bytes": 11330,
-					"sha256": "1374945bd3db94d20f997a924c14d8b6a0f846808f10eef86ca02576eb0f8ad5",
-					"preview": "ornaments/surah-frame/v2-preview-2026-06-16.png"
+					"sha256": "7554b1d356657a69befe799f1373ed2a1106468e52ccc5cc6635ad833d2535b1",
+					"preview": "ornaments/surah-frame/v2-preview-2026-07-10.png"
 				},
 				{
 					"id": "v4",
@@ -635,12 +635,7 @@
 					1616823, 981512, 548960, 915511, 1384604, 597481, 1770656, 849055,
 					1102720, 867408, 821471, 278742, 738005, 630082, 556394, 794593,
 					228169, 626447, 450524, 487557, 228714, 444090, 640658
-				],
-				"timings": {
-					"url": "audio/alnufais/timings-1.0.0.json",
-					"version": "1.0.0",
-					"bytes": 1273789
-				}
+				]
 			},
 			"hani-ar-rifai-recitation-murattal-hafs-68": {
 				"bytesApprox": 2153177243,
