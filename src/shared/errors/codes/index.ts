@@ -1,4 +1,5 @@
 import { AUTH } from "@/shared/errors/codes/auth";
+import { FEEDBACK } from "@/shared/errors/codes/feedback";
 import { NOT_FOUND } from "@/shared/errors/codes/not-found";
 import { PROVIDER } from "@/shared/errors/codes/provider";
 import { VALIDATION } from "@/shared/errors/codes/validation";
@@ -8,6 +9,7 @@ export const CODES = {
 	...VALIDATION,
 	...PROVIDER,
 	...NOT_FOUND,
+	...FEEDBACK,
 	INTERNAL_ERROR: 500000,
 } as const;
 

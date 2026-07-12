@@ -34,6 +34,18 @@ const EnvSchema = t.Object({
 			description: "OpenTelemetry OTLP exporter endpoint",
 		}),
 	),
+	// Feedback s3
+	FEEDBACK_S3_ENDPOINT: t.Optional(t.String({ description: "S3" })),
+	FEEDBACK_S3_ACCESS_KEY_ID: t.Optional(t.String({ description: "S3" })),
+	FEEDBACK_S3_SECRET_ACCESS_KEY: t.Optional(t.String({ description: "S3" })),
+	FEEDBACK_S3_BUCKET_NAME: t.Optional(t.String({ description: "S3" })),
+	// Feedback - queue
+	FEEDBACK_REDIS_URL: t.Optional(
+		t.String({ description: "Valkey URL fro BullMQ" }),
+	),
+	// Feedback Notification - Telegram
+	FEEDBACK_NOTIFICATION_BOT_TOKEN: t.Optional(t.String({ description: "" })),
+	TELEGRAM_CHAT_ID: t.Optional(t.String()),
 });
 
 export type Env = Static<typeof EnvSchema>;
