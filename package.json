@@ -31,5 +31,8 @@
 		"bun-plugin-glob-import": "^1.1.1",
 		"lefthook": "^2.1.10"
 	},
-	"module": "src/index.js"
+	"module": "src/index.js",
+	"overrides": {
+		"debug": "4.3.4"
+	}
 }
