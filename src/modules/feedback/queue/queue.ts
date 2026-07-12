@@ -34,7 +34,7 @@ export const createFeedbackQueue = ({
 		};
 	}
 
-	const producerConn = createConnection(redisUrl);
+	const producerConn = createConnection(redisUrl, { failFast: true });
 	const workerConn = createConnection(redisUrl);
 
 	const queue = new Queue(QUEUE_NAME, { connection: producerConn });
@@ -53,6 +53,9 @@ export const createFeedbackQueue = ({
 				"notify",
 				{ reportId },
 				{
+					// jobId = reportId dedupes duplicate/retried enqueues of the same
+					// report to a single job while it is still in the queue.
+					jobId: reportId,
 					attempts: 5,
 					backoff: { type: "exponential", delay: 1000 },
 					removeOnComplete: true,

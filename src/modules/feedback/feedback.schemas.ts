@@ -13,7 +13,7 @@ export const AppMeta = t.Object({
 	platform: t.Union([t.Literal("ios"), t.Literal("android")]),
 	osVersion: t.String({ maxLength: 32 }),
 	device: t.Optional(t.String({ maxLength: 64 })),
-	source: t.String({ maxLength: 32, default: "unknown" }),
+	source: t.Optional(t.String({ maxLength: 32, default: "unknown" })),
 	locale: t.Optional(t.String({ maxLength: 16 })),
 });
 

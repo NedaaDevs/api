@@ -82,6 +82,26 @@ export const createFeedbackService = ({
 			return { attachmentId: a.id, url, headers };
 		});
 
+	// Idempotent re-POST: refresh the token + URLs for a still-DRAFT report.
+	// A report that is already SUBMITTED has no draft to reissue — reject it
+	// rather than hand back a token whose hash was never stored.
+	const reissueDraft = (existing: ReportRow, submitToken: string) => {
+		if (existing.status === STATUS.SUBMITTED) {
+			throw new AppError(
+				"feedback report already submitted",
+				409,
+				CODES.ALREADY_SUBMITTED,
+			);
+		}
+		store.updateSubmitTokenHash(existing.id, hashToken(submitToken));
+		return {
+			id: existing.id,
+			submitToken,
+			tier: existing.tier as Tier,
+			uploads: presignAll(store.getAttachments(existing.id)),
+		};
+	};
+
 	const createDraft = (body: CreateReport) => {
 		if (!signer.isConfigured()) {
 			throw new AppError(
@@ -97,20 +117,11 @@ export const createFeedbackService = ({
 
 		const submitToken = genToken();
 
-		// Idempotent retry: same clientKey → reuse the draft, refresh token + URLs.
 		const existing = store.findByClientKey(body.clientKey);
-		if (existing) {
-			store.updateSubmitTokenHash(existing.id, hashToken(submitToken));
-			return {
-				id: existing.id,
-				submitToken,
-				tier: existing.tier as Tier,
-				uploads: presignAll(store.getAttachments(existing.id)),
-			};
-		}
+		if (existing) return reissueDraft(existing, submitToken);
 
 		const id = randomUUID();
-		store.insertDraft({
+		const inserted = store.insertDraft({
 			id,
 			clientKey: body.clientKey,
 			type: body.type,
@@ -123,6 +134,17 @@ export const createFeedbackService = ({
 			attestPlatform: null,
 			submitTokenHash: hashToken(submitToken),
 		});
+		// Lost an insert race on the same clientKey → fall back to the existing row
+		// instead of orphaning attachments against a non-persisted id.
+		if (!inserted) {
+			const raced = store.findByClientKey(body.clientKey);
+			if (raced) return reissueDraft(raced, submitToken);
+			throw new AppError(
+				"feedback draft conflict",
+				409,
+				CODES.ALREADY_SUBMITTED,
+			);
+		}
 
 		const attachmentRows = attachments.map((a) => {
 			const attachmentId = randomUUID();
@@ -166,9 +188,16 @@ export const createFeedbackService = ({
 				CODES.INVALID_SUBMIT_TOKEN,
 			);
 		}
-		// Only the first DRAFT→SUBMITTED transition enqueues a notification.
-		if (store.markSubmitted(id)) {
-			await queue.enqueueNotify(id);
+		store.markSubmitted(id); // DRAFT→SUBMITTED (no-op if already submitted)
+		// Enqueue while unnotified. Best-effort: the report is durably SUBMITTED,
+		// so a failed enqueue is recovered by resweep() and PATCH still returns
+		// 200. jobId=id dedupes duplicate enqueues into one job.
+		if (report.notified === 0) {
+			try {
+				await queue.enqueueNotify(id);
+			} catch (err) {
+				console.error("[feedback] enqueue failed; resweep will retry:", err);
+			}
 		}
 		return { status: STATUS.SUBMITTED };
 	};
@@ -218,6 +247,7 @@ export const FeedbackService = {
 			const report = store.findById(reportId);
 			if (!report) return;
 			await notifier.send(buildSummary(report, store));
+			store.markNotified(reportId);
 		};
 
 		const queue = createFeedbackQueue({
@@ -225,12 +255,29 @@ export const FeedbackService = {
 			processNotify,
 		});
 
+		// Re-enqueue reports that are SUBMITTED but never notified (a previous
+		// enqueue failed, or the process died before the worker ran). jobId
+		// dedup makes this safe to run repeatedly.
+		const resweep = async () => {
+			for (const reportId of store.findUnnotifiedSubmitted()) {
+				try {
+					await queue.enqueueNotify(reportId);
+				} catch (err) {
+					console.error("[feedback] resweep enqueue failed:", err);
+				}
+			}
+		};
+
 		instance = createFeedbackService({ store, signer, queue });
 		storeRef = store;
 		queueRef = queue;
 
 		store.cleanup();
-		cleanupTimer = setInterval(() => store.cleanup(), CLEANUP_INTERVAL_MS);
+		void resweep();
+		cleanupTimer = setInterval(() => {
+			store.cleanup();
+			void resweep();
+		}, CLEANUP_INTERVAL_MS);
 	},
 
 	async shutdown() {

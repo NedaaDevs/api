@@ -14,6 +14,7 @@ export interface ReportRow {
 	attested: number;
 	attest_platform: string | null;
 	submit_token_hash: string;
+	notified: number;
 	created_at: number;
 	submitted_at: number | null;
 }
@@ -73,6 +74,7 @@ export const createFeedbackStore = (dbPath = "data/feedback.db") => {
 			attested INTEGER NOT NULL DEFAULT 0,
 			attest_platform TEXT,
 			submit_token_hash TEXT NOT NULL,
+			notified INTEGER NOT NULL DEFAULT 0,
 			created_at INTEGER NOT NULL DEFAULT (unixepoch()),
 			submitted_at INTEGER
 		)
@@ -126,6 +128,12 @@ export const createFeedbackStore = (dbPath = "data/feedback.db") => {
 	const markSubmittedStmt = db.prepare(
 		"UPDATE reports SET status = 'SUBMITTED', submitted_at = unixepoch() WHERE id = ? AND status = 'DRAFT'",
 	);
+	const markNotifiedStmt = db.prepare(
+		"UPDATE reports SET notified = 1 WHERE id = ?",
+	);
+	const findUnnotifiedSubmittedStmt = db.query<{ id: string }, []>(
+		"SELECT id FROM reports WHERE status = 'SUBMITTED' AND notified = 0",
+	);
 	const updateSubmitTokenHashStmt = db.prepare(
 		"UPDATE reports SET submit_token_hash = $hash WHERE id = $id AND status = 'DRAFT'",
 	);
@@ -155,20 +163,25 @@ export const createFeedbackStore = (dbPath = "data/feedback.db") => {
 	);
 
 	return {
-		insertDraft(input: InsertDraftInput): void {
-			insertDraftStmt.run({
-				$id: input.id,
-				$clientKey: input.clientKey,
-				$type: input.type,
-				$area: input.area,
-				$message: input.message,
-				$contact: input.contact,
-				$app: input.app,
-				$tier: input.tier,
-				$attested: input.attested,
-				$attestPlatform: input.attestPlatform,
-				$submitTokenHash: input.submitTokenHash,
-			});
+		// Returns false when a row with the same client_key already exists
+		// (ON CONFLICT DO NOTHING), so the caller can fall back to the
+		// idempotent re-read path instead of orphaning attachments/token.
+		insertDraft(input: InsertDraftInput): boolean {
+			return (
+				insertDraftStmt.run({
+					$id: input.id,
+					$clientKey: input.clientKey,
+					$type: input.type,
+					$area: input.area,
+					$message: input.message,
+					$contact: input.contact,
+					$app: input.app,
+					$tier: input.tier,
+					$attested: input.attested,
+					$attestPlatform: input.attestPlatform,
+					$submitTokenHash: input.submitTokenHash,
+				}).changes > 0
+			);
 		},
 		findByClientKey(clientKey: string): ReportRow | null {
 			return findByClientKeyStmt.get(clientKey);
@@ -181,6 +194,12 @@ export const createFeedbackStore = (dbPath = "data/feedback.db") => {
 		},
 		markSubmitted(id: string): boolean {
 			return markSubmittedStmt.run(id).changes > 0;
+		},
+		markNotified(id: string): void {
+			markNotifiedStmt.run(id);
+		},
+		findUnnotifiedSubmitted(): string[] {
+			return findUnnotifiedSubmittedStmt.all().map((r) => r.id);
 		},
 		updateSubmitTokenHash(id: string, hash: string): void {
 			updateSubmitTokenHashStmt.run({ $id: id, $hash: hash });
