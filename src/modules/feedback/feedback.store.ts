@@ -126,6 +126,9 @@ export const createFeedbackStore = (dbPath = "data/feedback.db") => {
 	const markSubmittedStmt = db.prepare(
 		"UPDATE reports SET status = 'SUBMITTED', submitted_at = unixepoch() WHERE id = ? AND status = 'DRAFT'",
 	);
+	const updateSubmitTokenHashStmt = db.prepare(
+		"UPDATE reports SET submit_token_hash = $hash WHERE id = $id AND status = 'DRAFT'",
+	);
 	const getAttachmentsStmt = db.query<AttachmentRow, [string]>(
 		"SELECT * FROM attachments WHERE report_id = ? ORDER BY created_at",
 	);
@@ -178,6 +181,9 @@ export const createFeedbackStore = (dbPath = "data/feedback.db") => {
 		},
 		markSubmitted(id: string): boolean {
 			return markSubmittedStmt.run(id).changes > 0;
+		},
+		updateSubmitTokenHash(id: string, hash: string): void {
+			updateSubmitTokenHashStmt.run({ $id: id, $hash: hash });
 		},
 		getAttachments(reportId: string): AttachmentRow[] {
 			return getAttachmentsStmt.all(reportId);

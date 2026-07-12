@@ -4,6 +4,7 @@ import { Elysia } from "elysia";
 
 // Modules
 import { athkarModule } from "@/modules/athkar";
+import { feedbackModule } from "@/modules/feedback";
 import { healthModule } from "@/modules/health";
 import { locationsModule } from "@/modules/locations";
 import { prayerModule } from "@/modules/prayers";
@@ -50,6 +51,7 @@ export const app = new Elysia()
 	.group("/v3", (app) =>
 		app
 			.use(athkarModule)
+			.use(feedbackModule)
 			.use(healthModule)
 			.use(prayerModule)
 			.use(locationsModule)

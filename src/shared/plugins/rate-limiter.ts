@@ -10,3 +10,9 @@ export const locationRateLimit = rateLimit({
 	max: 3,
 	scoping: "scoped",
 });
+
+export const feedbackRateLimit = rateLimit({
+	duration: 60 * 1000, // 1 minute
+	max: 10,
+	scoping: "scoped",
+});
