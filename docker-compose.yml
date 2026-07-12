@@ -1,5 +1,5 @@
 volumes:
-  stats-data:
+  valkey-data:
 
 services:
   api:
@@ -13,11 +13,28 @@ services:
       - BDC_API_KEY=${BDC_API_KEY}
       - ADMIN_API_KEY=${ADMIN_API_KEY}
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
+      - FEEDBACK_REDIS_URL=redis://valkey:6379
+      - FEEDBACK_S3_ENDPOINT=${FEEDBACK_S3_ENDPOINT:-}
+      - FEEDBACK_S3_ACCESS_KEY_ID=${FEEDBACK_S3_ACCESS_KEY_ID:-}
+      - FEEDBACK_S3_SECRET_ACCESS_KEY=${FEEDBACK_S3_SECRET_ACCESS_KEY:-}
+      - FEEDBACK_S3_BUCKET_NAME=${FEEDBACK_S3_BUCKET_NAME:-}
+      - FEEDBACK_NOTIFICATION_BOT_TOKEN=${FEEDBACK_NOTIFICATION_BOT_TOKEN:-}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
     volumes:
-      - stats-data:/app/data
+      # SQLite (stats + feedback) persisted on the host.
+      - ./data:/app/data
     restart: unless-stopped
     depends_on:
       - jaeger
+      - valkey
+
+  valkey:
+    image: valkey/valkey:8-alpine
+    # AOF so queued notifications survive a Valkey restart.
+    command: valkey-server --appendonly yes
+    volumes:
+      - valkey-data:/data
+    restart: unless-stopped
 
   jaeger:
     image: jaegertracing/jaeger:latest

@@ -1,5 +1,5 @@
 volumes:
-  stats-data:
+  valkey-data:
 
 services:
   nedaa-api-new:
@@ -11,10 +11,20 @@ services:
       - BDC_API_KEY=${BDC_API_KEY}
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-}
       - ADMIN_API_KEY=${ADMIN_API_KEY}
+      - FEEDBACK_REDIS_URL=redis://valkey:6379
+      - FEEDBACK_S3_ENDPOINT=${FEEDBACK_S3_ENDPOINT:-}
+      - FEEDBACK_S3_ACCESS_KEY_ID=${FEEDBACK_S3_ACCESS_KEY_ID:-}
+      - FEEDBACK_S3_SECRET_ACCESS_KEY=${FEEDBACK_S3_SECRET_ACCESS_KEY:-}
+      - FEEDBACK_S3_BUCKET_NAME=${FEEDBACK_S3_BUCKET_NAME:-}
+      - FEEDBACK_NOTIFICATION_BOT_TOKEN=${FEEDBACK_NOTIFICATION_BOT_TOKEN:-}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
     volumes:
-      - stats-data:/app/data
+      # SQLite (stats + feedback) persisted on the host.
+      - ./data:/app/data
     restart: unless-stopped
     pull_policy: always
+    depends_on:
+      - valkey
     # healthcheck:
     #   test: ["CMD", "wget", "-q", "--spider", "http://localhost:3004/v3/health"]
     #   interval: 30s
@@ -29,3 +39,16 @@ services:
         reservations:
           cpus: "0.25"
           memory: 128M
+
+  valkey:
+    image: valkey/valkey:8-alpine
+    # AOF so queued notifications survive a Valkey restart.
+    command: valkey-server --appendonly yes
+    volumes:
+      - valkey-data:/data
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
