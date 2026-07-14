@@ -10,6 +10,7 @@ export const CODES = {
 	...PROVIDER,
 	...NOT_FOUND,
 	...FEEDBACK,
+	RATE_LIMITED: 429000,
 	INTERNAL_ERROR: 500000,
 } as const;
 

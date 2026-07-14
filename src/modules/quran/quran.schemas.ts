@@ -172,3 +172,12 @@ export type QuranContent = Static<typeof ContentSchema>;
 export type QuranAudio = Static<typeof AudioSchema>;
 export type QuranAudioReciter = Static<typeof AudioReciterSchema>;
 export type QuranRecitation = Static<typeof RecitationSchema>;
+
+// POST /quran/plays
+export const QuranPlayBody = t.Object({
+	recitationId: t.String({ minLength: 1, maxLength: 100 }),
+});
+export const QuranPlayResponse = t.Object({ ok: t.Literal(true) });
+
+export type QuranPlayBody = Static<typeof QuranPlayBody>;
+export type QuranPlayResponse = Static<typeof QuranPlayResponse>;
