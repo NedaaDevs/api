@@ -1,5 +1,6 @@
 import { Database } from "bun:sqlite";
 import { mkdirSync } from "node:fs";
+import { SQLITE_DB_PATH } from "@/config/db";
 
 export interface ReportRow {
 	id: string;
@@ -54,7 +55,7 @@ export interface InsertAttachmentInput {
 const DRAFT_TTL_SECONDS = 24 * 60 * 60;
 const CHALLENGE_TTL_SECONDS = 10 * 60;
 
-export const createFeedbackStore = (dbPath = "data/feedback.db") => {
+export const createFeedbackStore = (dbPath = SQLITE_DB_PATH) => {
 	mkdirSync("data", { recursive: true });
 	const db = new Database(dbPath);
 	db.run("PRAGMA journal_mode=WAL");
