@@ -20,6 +20,7 @@ services:
       - FEEDBACK_S3_BUCKET_NAME=${FEEDBACK_S3_BUCKET_NAME:-}
       - FEEDBACK_NOTIFICATION_BOT_TOKEN=${FEEDBACK_NOTIFICATION_BOT_TOKEN:-}
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
+    user: "1000:1000"
     volumes:
       - nedaa_data:/app/data
     restart: unless-stopped
