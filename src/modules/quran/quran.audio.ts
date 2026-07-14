@@ -378,3 +378,8 @@ export const audio: QuranAudio = {
 		}),
 	),
 };
+
+// Every registered recitation id — used to validate play events before they hit the DB.
+export const RECITATION_IDS: ReadonlySet<string> = new Set(
+	AUDIO_IDENTITY.flatMap((r) => r.recitations.map((rec) => rec.id)),
+);
