@@ -340,6 +340,23 @@ const AUDIO_IDENTITY: ReciterIdentity[] = [
 			},
 		],
 	},
+	{
+		id: "muhammad-ayyoob",
+		nameArabic: "محمد أيوب",
+		nameEnglish: "Muhammad Ayyoob",
+		recitations: [
+			{
+				id: "muhammad-ayyoob",
+				style: "Murattal",
+				riwayah: "hafs",
+				granularity: "surah",
+				basePath: "audio/muhammad-ayyoob/",
+				fileFormat: "mp3",
+				ayahCount: 6236,
+				published: false,
+			},
+		],
+	},
 ];
 
 export const audio: QuranAudio = {
