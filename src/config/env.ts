@@ -46,6 +46,19 @@ const EnvSchema = t.Object({
 	// Feedback Notification - Telegram
 	FEEDBACK_NOTIFICATION_BOT_TOKEN: t.Optional(t.String({ description: "" })),
 	TELEGRAM_CHAT_ID: t.Optional(t.String()),
+	// Stats - public snapshot bucket (separate from nedaa-cdn; never touches audio)
+	STATS_S3_ENDPOINT: t.Optional(
+		t.String({ description: "S3 bucket for the public stats snapshot" }),
+	),
+	STATS_S3_ACCESS_KEY_ID: t.Optional(
+		t.String({ description: "S3 bucket for the public stats snapshot" }),
+	),
+	STATS_S3_SECRET_ACCESS_KEY: t.Optional(
+		t.String({ description: "S3 bucket for the public stats snapshot" }),
+	),
+	STATS_S3_BUCKET_NAME: t.Optional(
+		t.String({ description: "S3 bucket for the public stats snapshot" }),
+	),
 });
 
 export type Env = Static<typeof EnvSchema>;
