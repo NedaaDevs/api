@@ -9,6 +9,13 @@ const EndpointStatSchema = t.Object({
 	p99Ms: t.Number(),
 });
 
+const ModuleStatSchema = t.Object({
+	module: t.String(),
+	count: t.Number(),
+	avgMs: t.Number(),
+	errorRate: t.Number(),
+});
+
 export const StatsSummaryResponse = t.Object({
 	period: t.String(),
 	totalRequests: t.Number(),
@@ -20,6 +27,8 @@ export const StatsSummaryResponse = t.Object({
 	p99Ms: t.Number(),
 	endpoints: t.Array(EndpointStatSchema),
 	statusCodes: t.Record(t.String(), t.Number()),
+	modules: t.Array(ModuleStatSchema),
+	intrusionAttempts: t.Number(),
 });
 
 export const StatsPeriodQuery = t.Object({

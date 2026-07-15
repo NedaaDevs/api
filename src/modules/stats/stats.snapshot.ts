@@ -64,12 +64,19 @@ const buildPayload = () => {
 		.sort((a, b) => b.plays - a.plays)
 		.slice(0, 5);
 
+	const monthly = StatsService.getSummary("30d");
+
 	return {
 		generatedAt: new Date().toISOString(),
 		periods,
 		lifetimeRequests: StatsService.getLifetimeRequests(),
 		catalog: buildCatalog(),
 		topRecitations,
+		// Counts only — no latency/error data goes public.
+		requestsByModule: Object.fromEntries(
+			monthly.modules.map((m) => [m.module, m.count]),
+		),
+		intrusionAttempts: monthly.intrusionAttempts,
 	};
 };
 

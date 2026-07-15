@@ -216,6 +216,64 @@ describe("retention sweep", () => {
 	});
 });
 
+describe("module rollup", () => {
+	test("groups endpoints by module, excludes health/junk, sorts by count desc", () => {
+		for (let i = 0; i < 3; i++) {
+			record({
+				endpoint: "/v3/prayers/timings",
+				method: "GET",
+				statusCode: 200,
+				responseTimeMs: 10,
+			});
+		}
+		for (let i = 0; i < 2; i++) {
+			record({
+				endpoint: "/v3/prayers/calendar",
+				method: "GET",
+				statusCode: 500,
+				responseTimeMs: 20,
+			});
+		}
+		record({
+			endpoint: "/v3/locations/search",
+			method: "GET",
+			statusCode: 200,
+			responseTimeMs: 5,
+		});
+		record({
+			endpoint: "/v3/health",
+			method: "GET",
+			statusCode: 200,
+			responseTimeMs: 1,
+		});
+		record({
+			endpoint: "/wp-admin",
+			method: "GET",
+			statusCode: 404,
+			responseTimeMs: 1,
+		});
+
+		const summary = StatsService.getSummary("24h");
+
+		const prayers = summary.modules.find((m) => m.module === "prayers");
+		expect(prayers?.count).toBe(5);
+		expect(prayers?.avgMs).toBe(Math.round((3 * 10 + 2 * 20) / 5));
+		expect(prayers?.errorRate).toBe(Number((2 / 5).toFixed(4)));
+
+		const locations = summary.modules.find((m) => m.module === "locations");
+		expect(locations?.count).toBe(1);
+
+		expect(summary.modules.find((m) => m.module === "health")).toBeUndefined();
+		expect(summary.modules.find((m) => m.module === "other")).toBeUndefined();
+
+		for (let i = 1; i < summary.modules.length; i++) {
+			expect(summary.modules[i - 1].count).toBeGreaterThanOrEqual(
+				summary.modules[i].count,
+			);
+		}
+	});
+});
+
 describe("recitation plays service", () => {
 	test("recordPlay aggregates counts, ordered plays desc", () => {
 		StatsService.recordPlay("minshawi-murattal");
@@ -303,5 +361,27 @@ describe("/stats/recitations", () => {
 				body.recitations[i].plays,
 			);
 		}
+	});
+});
+
+describe("intrusion attempts", () => {
+	test("counts probe paths, ignores legitimate traffic", () => {
+		const before = StatsService.getSummary("24h").intrusionAttempts;
+		for (const endpoint of [
+			"/.env",
+			"/.git/config",
+			"/wp-admin/setup-config.php",
+			"/vendor/phpunit/eval-stdin.php",
+		]) {
+			record({ endpoint, method: "GET", statusCode: 404, responseTimeMs: 1 });
+		}
+		record({
+			endpoint: "/v3/prayers/timings",
+			method: "GET",
+			statusCode: 200,
+			responseTimeMs: 8,
+		});
+
+		expect(StatsService.getSummary("24h").intrusionAttempts).toBe(before + 4);
 	});
 });

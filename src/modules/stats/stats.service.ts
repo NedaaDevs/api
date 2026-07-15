@@ -55,6 +55,38 @@ const SWEEP_INTERVAL_MS = 3_600_000;
 const PERIOD_HOURS = { "24h": 24, "7d": 168, "30d": 720 } as const;
 export type Period = keyof typeof PERIOD_HOURS;
 
+// Anything outside this set (health pings, scanner/404 junk) is excluded
+// from the rollup rather than bucketed as "other".
+const KNOWN_MODULES = new Set([
+	"prayers",
+	"quran",
+	"athkar",
+	"locations",
+	"feedback",
+]);
+const moduleOf = (endpoint: string): string | null => {
+	const segment = endpoint.replace(/^\/v3\//, "").split("/")[0] ?? "";
+	return KNOWN_MODULES.has(segment) ? segment : null;
+};
+
+// Paths no real client ever requests — bots probing for secrets and admin
+// panels. We serve none of these, so a hit is an intrusion attempt; counted at
+// read time and surfaced as a lighthearted "attacks repelled" number.
+const PROBE_PATTERNS = [
+	"%.env%",
+	"%.git%",
+	"%.aws%",
+	"%.ssh%",
+	"%wp-admin%",
+	"%wp-login%",
+	"%wp-config%",
+	"%xmlrpc.php%",
+	"%phpmyadmin%",
+	"%/administrator%",
+	"%/vendor/%",
+	"%/config.json%",
+];
+
 // biome-ignore lint/complexity/noStaticOnlyClass: project pattern
 export abstract class StatsService {
 	private static db: Database;
@@ -238,6 +270,16 @@ export abstract class StatsService {
 		const p95Ms = percentile(0.95);
 		const p99Ms = percentile(0.99);
 
+		const probeClause = PROBE_PATTERNS.map(() => "endpoint LIKE ?").join(
+			" OR ",
+		);
+		const intrusionAttempts =
+			StatsService.db
+				.query<{ n: number }, [number, ...string[]]>(
+					`SELECT COUNT(*) as n FROM request_stats WHERE created_at > ? AND (${probeClause})`,
+				)
+				.get(since, ...PROBE_PATTERNS)?.n ?? 0;
+
 		const endpoints = StatsService.db
 			.query<EndpointRow, [number]>(
 				`SELECT
@@ -249,6 +291,28 @@ export abstract class StatsService {
 			GROUP BY endpoint ORDER BY count DESC`,
 			)
 			.all(since);
+
+		const moduleTotals = new Map<
+			string,
+			{ count: number; msSum: number; errSum: number }
+		>();
+		for (const e of endpoints) {
+			const key = moduleOf(e.endpoint);
+			if (key === null) continue;
+			const totals = moduleTotals.get(key) ?? { count: 0, msSum: 0, errSum: 0 };
+			totals.count += e.count;
+			totals.msSum += e.count * e.avg_ms;
+			totals.errSum += e.count * e.error_rate;
+			moduleTotals.set(key, totals);
+		}
+		const modules = Array.from(moduleTotals.entries())
+			.map(([module, t]) => ({
+				module,
+				count: t.count,
+				avgMs: Math.round(t.msSum / t.count),
+				errorRate: Number((t.errSum / t.count).toFixed(4)),
+			}))
+			.sort((a, b) => b.count - a.count || a.module.localeCompare(b.module));
 
 		const endpointPercentiles = StatsService.db
 			.query<EndpointPercentileRow, [number]>(
@@ -305,6 +369,8 @@ export abstract class StatsService {
 			statusCodes: Object.fromEntries(
 				statusCodes.map((s) => [String(s.status_code), s.count]),
 			),
+			modules,
+			intrusionAttempts,
 		};
 	}
 
