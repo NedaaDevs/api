@@ -641,7 +641,7 @@
 	},
 	"ornaments": {
 		"ayahMarker": {
-			"default": "classic",
+			"default": "nedaa",
 			"defaultByEdition": {
 				"v1": "v1",
 				"v2": "v2",
@@ -681,11 +681,11 @@
 			]
 		},
 		"pageHolder": {
-			"default": "medallion",
+			"default": "nedaa",
 			"options": []
 		},
 		"surahFrame": {
-			"default": "cartouche",
+			"default": "nedaa",
 			"defaultByEdition": {
 				"v1": "v1",
 				"v2": "v2",

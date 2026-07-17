@@ -123,6 +123,19 @@ describe("GET /v3/quran/manifest", () => {
 		}
 	});
 
+	test("bundled baseline default is the nedaa style for every category", async () => {
+		const { body } = await getManifest();
+		for (const cat of ["ayahMarker", "surahFrame", "pageHolder"]) {
+			expect(body.ornaments[cat].default).toBe("nedaa");
+			// The bundled default is never a downloadable option.
+			expect(
+				body.ornaments[cat].options.some(
+					(o: { id: string }) => o.id === "nedaa",
+				),
+			).toBe(false);
+		}
+	});
+
 	test("marker ornaments are scoped to their own edition", async () => {
 		const { body } = await getManifest();
 		for (const cat of ["ayahMarker", "surahFrame"]) {
@@ -152,9 +165,9 @@ describe("GET /v3/quran/manifest", () => {
 					baseUrl: `${env.CDN_URL}/quran`,
 					editions: [],
 					ornaments: {
-						ayahMarker: { default: "classic", options: [] },
-						surahFrame: { default: "cartouche", options: [] },
-						pageHolder: { default: "medallion", options: [] },
+						ayahMarker: { default: "nedaa", options: [] },
+						surahFrame: { default: "nedaa", options: [] },
+						pageHolder: { default: "nedaa", options: [] },
 					},
 					content: {
 						version: "2026-06-16",
