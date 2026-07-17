@@ -649,34 +649,34 @@
 			},
 			"options": [
 				{
-					"bytes": 19069,
-					"editions": ["v1"],
 					"id": "v1",
-					"preview": "ornaments/ayah-marker/v1-preview-2026-07-10.png",
+					"version": "2026-07-17",
 					"resolution": 1440,
-					"sha256": "344951e7ceca9702ba4f65cbe9a6142b379a02d640b32d414d52c33fdbd900f2",
-					"url": "ornaments/ayah-marker/v1-2026-07-10.zip",
-					"version": "2026-07-10"
+					"editions": ["v1"],
+					"url": "ornaments/ayah-marker/v1-2026-07-17.zip",
+					"bytes": 46312,
+					"sha256": "e3c875f69a6a2cd5e56caf61a3349a6788375638f13ef9cf0c7e3078ff0fa9fe",
+					"preview": "ornaments/ayah-marker/v1-preview-2026-07-17.png"
 				},
 				{
-					"bytes": 18703,
-					"editions": ["v2"],
 					"id": "v2",
-					"preview": "ornaments/ayah-marker/v2-preview-2026-07-10.png",
+					"version": "2026-07-17",
 					"resolution": 1440,
-					"sha256": "d052fe831e9032759fb02316222ae271e883b3c9aebdde3f970d4255800385e6",
-					"url": "ornaments/ayah-marker/v2-2026-07-10.zip",
-					"version": "2026-07-10"
+					"editions": ["v2"],
+					"url": "ornaments/ayah-marker/v2-2026-07-17.zip",
+					"bytes": 44204,
+					"sha256": "adb3930faa436dc7a18367dcc351bbb69ab54ea4f2bc53a6419b928c48bf482b",
+					"preview": "ornaments/ayah-marker/v2-preview-2026-07-17.png"
 				},
 				{
-					"bytes": 19576,
-					"editions": ["v4"],
 					"id": "v4",
-					"preview": "ornaments/ayah-marker/v4-preview-2026-06-16.png",
+					"version": "2026-07-17",
 					"resolution": 1440,
-					"sha256": "13d948bf2267466cc3e4764c73a10ec1ca9c0afaf4bba824fbf2cad944a7d8e0",
-					"url": "ornaments/ayah-marker/v4-2026-06-16.zip",
-					"version": "2026-06-16"
+					"editions": ["v4"],
+					"url": "ornaments/ayah-marker/v4-2026-07-17.zip",
+					"bytes": 45402,
+					"sha256": "a5bc3f5e17fef73ec05deea7b2af0f4da3598572a82cda711b1ce19e63a2c791",
+					"preview": "ornaments/ayah-marker/v4-preview-2026-07-17.png"
 				}
 			]
 		},
@@ -693,34 +693,34 @@
 			},
 			"options": [
 				{
-					"bytes": 11330,
-					"editions": ["v1"],
 					"id": "v1",
-					"preview": "ornaments/surah-frame/v1-preview-2026-07-10.png",
+					"version": "2026-07-17",
 					"resolution": 1440,
-					"sha256": "c71662f5961f05411f6f7c0d3a4bdaaccfe2b98c7f0a96b1c8c166a78b17ffb4",
-					"url": "ornaments/surah-frame/v1-2026-07-10.zip",
-					"version": "2026-07-10"
+					"editions": ["v1"],
+					"url": "ornaments/surah-frame/v1-2026-07-17.zip",
+					"bytes": 73090,
+					"sha256": "2926d0361b9db73717bb2721ff3570667747bccb9412e4487acfb8988b217d97",
+					"preview": "ornaments/surah-frame/v1-preview-2026-07-17.png"
 				},
 				{
-					"bytes": 11330,
-					"editions": ["v2"],
 					"id": "v2",
-					"preview": "ornaments/surah-frame/v2-preview-2026-07-10.png",
+					"version": "2026-07-17",
 					"resolution": 1440,
-					"sha256": "7554b1d356657a69befe799f1373ed2a1106468e52ccc5cc6635ad833d2535b1",
-					"url": "ornaments/surah-frame/v2-2026-07-10.zip",
-					"version": "2026-07-10"
+					"editions": ["v2"],
+					"url": "ornaments/surah-frame/v2-2026-07-17.zip",
+					"bytes": 73090,
+					"sha256": "6265c5fc1e8352a5e218356bc535d0720d15ed0154c153023b7998b1bb4f3856",
+					"preview": "ornaments/surah-frame/v2-preview-2026-07-17.png"
 				},
 				{
-					"bytes": 11330,
-					"editions": ["v4"],
 					"id": "v4",
-					"preview": "ornaments/surah-frame/v4-preview-2026-06-16.png",
+					"version": "2026-07-17",
 					"resolution": 1440,
-					"sha256": "da44f9c070bba4adbdd3b1903f9b15a1c46152eeee17a5ac2386bf1b5e90d820",
-					"url": "ornaments/surah-frame/v4-2026-06-16.zip",
-					"version": "2026-06-16"
+					"editions": ["v4"],
+					"url": "ornaments/surah-frame/v4-2026-07-17.zip",
+					"bytes": 73090,
+					"sha256": "144abdeaf1a44161cfff493f4979a172624561a45e5d9ac23bf9ea43e06064b9",
+					"preview": "ornaments/surah-frame/v4-preview-2026-07-17.png"
 				}
 			]
 		}
