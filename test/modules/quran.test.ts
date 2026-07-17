@@ -138,16 +138,27 @@ describe("GET /v3/quran/manifest", () => {
 
 	test("marker ornaments are scoped to their own edition", async () => {
 		const { body } = await getManifest();
-		for (const cat of ["ayahMarker", "surahFrame"]) {
-			const group = body.ornaments[cat];
-			// Each version contributes a native pack compatible with itself only.
-			for (const id of ["v1", "v2", "v4"]) {
-				const opt = group.options.find((o: { id: string }) => o.id === id);
-				expect(opt.editions).toEqual([id]);
-				expect(opt.resolution).toBeNumber();
-				expect(opt.sha256).toBeString();
-				expect(group.defaultByEdition[id]).toBe(id);
-			}
+		const group = body.ornaments.ayahMarker;
+		// Each version contributes a native pack compatible with itself only.
+		for (const id of ["v1", "v2", "v4"]) {
+			const opt = group.options.find((o: { id: string }) => o.id === id);
+			expect(opt.editions).toEqual([id]);
+			expect(opt.resolution).toBeNumber();
+			expect(opt.sha256).toBeString();
+			expect(group.defaultByEdition[id]).toBe(id);
+		}
+	});
+
+	test("surah frame is one shared classic pack for every edition", async () => {
+		const { body } = await getManifest();
+		const group = body.ornaments.surahFrame;
+		expect(group.options.map((o: { id: string }) => o.id)).toEqual(["classic"]);
+		const opt = group.options[0];
+		// Cross-edition: no editions scoping on the option itself.
+		expect(opt.editions).toBeUndefined();
+		expect(opt.sha256).toBeString();
+		for (const id of ["v1", "v2", "v4"]) {
+			expect(group.defaultByEdition[id]).toBe("classic");
 		}
 	});
 
