@@ -580,38 +580,38 @@
 	"editions": {
 		"v1": {
 			"images": {
-				"version": "2026-07-18",
+				"version": "2026-07-19",
 				"pages": 604,
 				"light": {
-					"url": "v1/1440/images-light-2026-07-18.zip",
-					"bytes": 168113155,
-					"sha256": "09e5da82c980eeab96e0c6cf59f7f230cba0ce9813ededf42a68742e7a4eb6a0"
+					"url": "v1/1440/images-light-2026-07-19.zip",
+					"bytes": 168112706,
+					"sha256": "4b1983aa9ffecaef0de9812796c006a5f5ce3a5e5ab112afd1ed78f89b7b8d82"
 				}
 			},
 			"meta": {
-				"version": "2026-07-18",
+				"version": "2026-07-19",
 				"schema": 2,
-				"requiresImages": "2026-07-18",
-				"url": "v1/1440/meta-2026-07-18.zip",
+				"requiresImages": "2026-07-19",
+				"url": "v1/1440/meta-2026-07-19.zip",
 				"bytes": 5079208,
-				"sha256": "232dbbb8c002f7dd3e8e9a296c1dd252fdd2959d617b7ee3161514d68646fc76"
+				"sha256": "2d1bb733bfdf79caab48b8b791eb51161c5f5d500bbbe51ebed35f193cb35bc1"
 			},
 			"previews": [
 				{
 					"page": 1,
-					"url": "v1/1440/previews/001.webp",
+					"url": "v1/1440/previews/001-2026-07-19.webp",
 					"width": 1440,
 					"height": 3480
 				},
 				{
 					"page": 2,
-					"url": "v1/1440/previews/002.webp",
+					"url": "v1/1440/previews/002-2026-07-19.webp",
 					"width": 1440,
 					"height": 3480
 				},
 				{
 					"page": 302,
-					"url": "v1/1440/previews/302.webp",
+					"url": "v1/1440/previews/302-2026-07-19.webp",
 					"width": 1440,
 					"height": 3480
 				}
@@ -619,38 +619,38 @@
 		},
 		"v2": {
 			"images": {
-				"version": "2026-07-18",
+				"version": "2026-07-19",
 				"pages": 604,
 				"light": {
-					"url": "v2/1440/images-light-2026-07-18.zip",
-					"bytes": 109310759,
-					"sha256": "958e825bcee7edb03ed7e500d5b65ab160b2094e1f5cc258676589ab81b66d6f"
+					"url": "v2/1440/images-light-2026-07-19.zip",
+					"bytes": 109310696,
+					"sha256": "897775937dc4dee017507ca4db637e1780799ffb063f380c2afa5079811da99f"
 				}
 			},
 			"meta": {
-				"version": "2026-07-18",
+				"version": "2026-07-19",
 				"schema": 2,
-				"requiresImages": "2026-07-18",
-				"url": "v2/1440/meta-2026-07-18.zip",
+				"requiresImages": "2026-07-19",
+				"url": "v2/1440/meta-2026-07-19.zip",
 				"bytes": 5058728,
-				"sha256": "0bbedac6190cd926162d7decf184d9eb7b718cb8ee84a3c659aa2b0ecc7e4c34"
+				"sha256": "182b9bbd1405356fe94cda0d44bd0eaef140130bfe35576d16cdec4a5e618393"
 			},
 			"previews": [
 				{
 					"page": 1,
-					"url": "v2/1440/previews/001.webp",
+					"url": "v2/1440/previews/001-2026-07-19.webp",
 					"width": 1440,
 					"height": 3480
 				},
 				{
 					"page": 2,
-					"url": "v2/1440/previews/002.webp",
+					"url": "v2/1440/previews/002-2026-07-19.webp",
 					"width": 1440,
 					"height": 3480
 				},
 				{
 					"page": 302,
-					"url": "v2/1440/previews/302.webp",
+					"url": "v2/1440/previews/302-2026-07-19.webp",
 					"width": 1440,
 					"height": 3480
 				}
@@ -660,61 +660,61 @@
 			"darkPreviews": [
 				{
 					"page": 1,
-					"url": "v4/1440/previews/001-dark.webp",
+					"url": "v4/1440/previews/001-dark-2026-07-19.webp",
 					"width": 1440,
 					"height": 3480
 				},
 				{
 					"page": 2,
-					"url": "v4/1440/previews/002-dark.webp",
+					"url": "v4/1440/previews/002-dark-2026-07-19.webp",
 					"width": 1440,
 					"height": 3480
 				},
 				{
 					"page": 302,
-					"url": "v4/1440/previews/302-dark.png",
+					"url": "v4/1440/previews/302-dark-2026-07-19.png",
 					"width": 1440,
 					"height": 3480
 				}
 			],
 			"images": {
-				"version": "2026-07-18",
+				"version": "2026-07-19",
 				"pages": 604,
 				"light": {
-					"url": "v4/1440/images-light-2026-07-18.zip",
-					"bytes": 91486201,
-					"sha256": "7c07ae7083e680f46bf8398ba7dcf3b973ffaf39a4e9fdf03880c6673f6a26a1"
+					"url": "v4/1440/images-light-2026-07-19.zip",
+					"bytes": 91487403,
+					"sha256": "0c6d9ef77945c50123e45001fbac28cb4a6c934c27c1eee5e17098e0daafd0df"
 				},
 				"dark": {
-					"url": "v4/1440/images-dark-2026-07-18.zip",
-					"bytes": 91878833,
-					"sha256": "40c86b2d80b22ad2d5244c8fa51756cd17113468e8d0f829123f5d52b54c0a12"
+					"url": "v4/1440/images-dark-2026-07-19.zip",
+					"bytes": 91883741,
+					"sha256": "5062c739a3a46ca58f43991a0ed3c037dca79412c8562775d30087a44f82c38f"
 				}
 			},
 			"meta": {
-				"version": "2026-07-18",
+				"version": "2026-07-19",
 				"schema": 2,
-				"requiresImages": "2026-07-18",
-				"url": "v4/1440/meta-2026-07-18.zip",
+				"requiresImages": "2026-07-19",
+				"url": "v4/1440/meta-2026-07-19.zip",
 				"bytes": 5243048,
-				"sha256": "55269874fcbdf393ed6c34f8dad4941dc0ee62d211d68195982aca8de0207842"
+				"sha256": "45d33a4dc98b5111ab75fb02e45bc49f8f7ec3b97c62ce4049f71e15f7ca96ce"
 			},
 			"previews": [
 				{
 					"page": 1,
-					"url": "v4/1440/previews/001.png",
+					"url": "v4/1440/previews/001-2026-07-19.webp",
 					"width": 1440,
 					"height": 3480
 				},
 				{
 					"page": 2,
-					"url": "v4/1440/previews/002.png",
+					"url": "v4/1440/previews/002-2026-07-19.png",
 					"width": 1440,
 					"height": 3480
 				},
 				{
 					"page": 302,
-					"url": "v4/1440/previews/302.png",
+					"url": "v4/1440/previews/302-2026-07-19.png",
 					"width": 1440,
 					"height": 3480
 				}
@@ -732,33 +732,33 @@
 			"options": [
 				{
 					"id": "v1",
-					"version": "2026-07-18",
+					"version": "2026-07-19",
 					"resolution": 1440,
 					"editions": ["v1"],
-					"url": "ornaments/ayah-marker/v1-2026-07-18.zip",
+					"url": "ornaments/ayah-marker/v1-2026-07-19.zip",
 					"bytes": 46312,
-					"sha256": "bf2f421b714535bf5a68cfa30d158dc36cefe3abdf6271e6bd025cb3ba51457a",
-					"preview": "ornaments/ayah-marker/v1-preview-2026-07-18.png"
+					"sha256": "47a42771b28253cceb148e590b0dd66cdf695adff02c4f769ed4b9f6384f9984",
+					"preview": "ornaments/ayah-marker/v1-preview-2026-07-19.png"
 				},
 				{
 					"id": "v2",
-					"version": "2026-07-18",
+					"version": "2026-07-19",
 					"resolution": 1440,
 					"editions": ["v2"],
-					"url": "ornaments/ayah-marker/v2-2026-07-18.zip",
+					"url": "ornaments/ayah-marker/v2-2026-07-19.zip",
 					"bytes": 44204,
-					"sha256": "6059ae3eb0772a26d8a54a77735551f7b827993342778d145d06e9e409a392fe",
-					"preview": "ornaments/ayah-marker/v2-preview-2026-07-18.png"
+					"sha256": "349b7db795e42c1e33a8d444a07f7f4c04edbf0053a5de27ac7b6d12c1bf40c3",
+					"preview": "ornaments/ayah-marker/v2-preview-2026-07-19.png"
 				},
 				{
 					"id": "v4",
-					"version": "2026-07-18",
+					"version": "2026-07-19",
 					"resolution": 1440,
 					"editions": ["v4"],
-					"url": "ornaments/ayah-marker/v4-2026-07-18.zip",
+					"url": "ornaments/ayah-marker/v4-2026-07-19.zip",
 					"bytes": 19804,
-					"sha256": "feead17bcd60961bbb19db05862bfb6f243a86b0c68281c6733f828c87c60bad",
-					"preview": "ornaments/ayah-marker/v4-preview-2026-07-18.png"
+					"sha256": "4b774ed4a70db5d0fddbca5e377eeb21c82122dfcda35f35e90c012e94776417",
+					"preview": "ornaments/ayah-marker/v4-preview-2026-07-19.png"
 				}
 			]
 		},
@@ -776,12 +776,12 @@
 			"options": [
 				{
 					"id": "classic",
-					"version": "2026-07-18",
+					"version": "2026-07-19",
 					"resolution": 1440,
-					"url": "ornaments/surah-frame/classic-2026-07-18.zip",
+					"url": "ornaments/surah-frame/classic-2026-07-19.zip",
 					"bytes": 50944,
-					"sha256": "5572846794de75bf0c11bde3f6b6300b5918ad33ab37299bde3f531d39165b27",
-					"preview": "ornaments/surah-frame/classic-preview-2026-07-18.png"
+					"sha256": "88e053e09016094a5d7a9e07638e1bd3625894738859ed9ac6cdaabce95911de",
+					"preview": "ornaments/surah-frame/classic-preview-2026-07-19.png"
 				}
 			]
 		}
