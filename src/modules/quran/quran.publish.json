@@ -737,7 +737,7 @@
 					"editions": ["v1"],
 					"url": "ornaments/ayah-marker/v1.zip",
 					"bytes": 46312,
-					"sha256": "a9b4bb0a95a0f92161e4e5356aba350bf8e80b3b5fd389ed7eb76b2351165484",
+					"sha256": "27075837eac2934f074201d2dbb388042605e009a500ae27ed59bebde70532c2",
 					"preview": "ornaments/ayah-marker/v1-preview.png"
 				},
 				{
@@ -779,8 +779,8 @@
 					"version": "2026-07-19",
 					"resolution": 1440,
 					"url": "ornaments/surah-frame/classic.zip",
-					"bytes": 91236,
-					"sha256": "2ebe75e40d3522855ab8918a49209245a0dd915cae561358961e51c6988e3057",
+					"bytes": 91428,
+					"sha256": "ee88222c1830b8a6a05a6fb4bb9fbe5a2ea1e9cb00e009042cc7d982fa42888e",
 					"preview": "ornaments/surah-frame/classic-preview.png"
 				}
 			]
