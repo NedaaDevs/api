@@ -41,25 +41,28 @@ export const StatsPeriodQuery = t.Object({
 // daily-bucket sums, immune to the 90-day raw-row sweep; "all" = lifetime,
 // served from durable per-id counters. Distinct from StatsPeriodQuery, which
 // keeps its own 24h/7d/30d windows for the request-latency summary.
-const COUNTER_PERIOD_LITERALS = [
-	t.Literal("day"),
-	t.Literal("week"),
-	t.Literal("month"),
-	t.Literal("year"),
-	t.Literal("all"),
-];
+const counterPeriod = (options?: { default: string }) =>
+	t.Union(
+		[
+			t.Literal("day"),
+			t.Literal("week"),
+			t.Literal("month"),
+			t.Literal("year"),
+			t.Literal("all"),
+		],
+		options,
+	);
 
-const CounterPeriod = t.Union(COUNTER_PERIOD_LITERALS);
-
-// Default applied by the schema, so handlers never re-state it.
+// Not t.Optional: the schema default fills an absent `period` before the
+// handler runs, so it's always present and handlers never re-state the default.
 const CounterPeriodQuery = t.Object({
-	period: t.Optional(t.Union(COUNTER_PERIOD_LITERALS, { default: "month" })),
+	period: counterPeriod({ default: "month" }),
 });
 
 export const StatsRecitationsQuery = CounterPeriodQuery;
 
 export const StatsRecitationsResponse = t.Object({
-	period: CounterPeriod,
+	period: counterPeriod(),
 	recitations: t.Array(
 		t.Object({
 			recitationId: t.String(),
@@ -71,7 +74,7 @@ export const StatsRecitationsResponse = t.Object({
 export const StatsQuranDownloadsQuery = CounterPeriodQuery;
 
 export const StatsQuranDownloadsResponse = t.Object({
-	period: CounterPeriod,
+	period: counterPeriod(),
 	downloads: t.Array(
 		t.Object({
 			version: t.String(),
