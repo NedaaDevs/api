@@ -1,7 +1,12 @@
 import { S3Client } from "bun";
 import { env } from "@/config/env";
 import { audio } from "@/modules/quran/quran.audio";
-import { type Period, StatsService } from "@/modules/stats/stats.service";
+import {
+	COUNTER_PERIODS,
+	type CounterPeriod,
+	type Period,
+	StatsService,
+} from "@/modules/stats/stats.service";
 
 const FIRST_RUN_DELAY_MS = 30_000;
 const RUN_INTERVAL_MS = 3_600_000;
@@ -59,10 +64,49 @@ const buildPayload = () => {
 		};
 	}
 
-	const topRecitations = StatsService.getRecitationPlays("30d")
-		.filter((r) => r.plays > 0 && PUBLISHED_IDS.has(r.recitationId))
-		.sort((a, b) => b.plays - a.plays)
-		.slice(0, 5);
+	// Lifetime ("all" — durable per-id counters, unaffected by the 90-day
+	// raw-row sweep) ranks each list; every entry also carries every other
+	// counter window (day/week/month/year) as a trend signal.
+	const zeroWindows: Record<CounterPeriod, number> = {
+		day: 0,
+		week: 0,
+		month: 0,
+		year: 0,
+		all: 0,
+	};
+
+	// Published-only, top 5.
+	const playWindows = new Map<string, Record<CounterPeriod, number>>();
+	for (const period of COUNTER_PERIODS) {
+		for (const { recitationId, plays } of StatsService.getRecitationPlays(
+			period,
+		)) {
+			const windows = playWindows.get(recitationId) ?? { ...zeroWindows };
+			windows[period] = plays;
+			playWindows.set(recitationId, windows);
+		}
+	}
+	const topRecitations = [...playWindows.entries()]
+		.filter(([recitationId, w]) => w.all > 0 && PUBLISHED_IDS.has(recitationId))
+		.sort((a, b) => b[1].all - a[1].all)
+		.slice(0, 5)
+		.map(([recitationId, plays]) => ({ recitationId, plays }));
+
+	// All editions 0-filled (via the "all" window) — the edition set is tiny
+	// and fixed.
+	const downloadWindows = new Map<string, Record<CounterPeriod, number>>();
+	for (const period of COUNTER_PERIODS) {
+		for (const { version, downloads } of StatsService.getQuranDownloads(
+			period,
+		)) {
+			const windows = downloadWindows.get(version) ?? { ...zeroWindows };
+			windows[period] = downloads;
+			downloadWindows.set(version, windows);
+		}
+	}
+	const editionDownloads = [...downloadWindows.entries()]
+		.sort((a, b) => b[1].all - a[1].all)
+		.map(([version, downloads]) => ({ version, downloads }));
 
 	const monthly = StatsService.getSummary("30d");
 
@@ -72,6 +116,7 @@ const buildPayload = () => {
 		lifetimeRequests: StatsService.getLifetimeRequests(),
 		catalog: buildCatalog(),
 		topRecitations,
+		editionDownloads,
 		// Counts only — no latency/error data goes public.
 		requestsByModule: Object.fromEntries(
 			monthly.modules.map((m) => [m.module, m.count]),

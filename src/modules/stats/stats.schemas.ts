@@ -37,19 +37,29 @@ export const StatsPeriodQuery = t.Object({
 	),
 });
 
-export const StatsRecitationsQuery = t.Object({
-	period: t.Optional(
-		t.Union([
-			t.Literal("24h"),
-			t.Literal("7d"),
-			t.Literal("30d"),
-			t.Literal("all"),
-		]),
-	),
+// "day" = raw rows (sub-day precision); "week"/"month"/"year" = durable
+// daily-bucket sums, immune to the 90-day raw-row sweep; "all" = lifetime,
+// served from durable per-id counters. Distinct from StatsPeriodQuery, which
+// keeps its own 24h/7d/30d windows for the request-latency summary.
+const COUNTER_PERIOD_LITERALS = [
+	t.Literal("day"),
+	t.Literal("week"),
+	t.Literal("month"),
+	t.Literal("year"),
+	t.Literal("all"),
+];
+
+const CounterPeriod = t.Union(COUNTER_PERIOD_LITERALS);
+
+// Default applied by the schema, so handlers never re-state it.
+const CounterPeriodQuery = t.Object({
+	period: t.Optional(t.Union(COUNTER_PERIOD_LITERALS, { default: "month" })),
 });
 
+export const StatsRecitationsQuery = CounterPeriodQuery;
+
 export const StatsRecitationsResponse = t.Object({
-	period: t.String(),
+	period: CounterPeriod,
 	recitations: t.Array(
 		t.Object({
 			recitationId: t.String(),
@@ -58,5 +68,18 @@ export const StatsRecitationsResponse = t.Object({
 	),
 });
 
+export const StatsQuranDownloadsQuery = CounterPeriodQuery;
+
+export const StatsQuranDownloadsResponse = t.Object({
+	period: CounterPeriod,
+	downloads: t.Array(
+		t.Object({
+			version: t.String(),
+			downloads: t.Number(),
+		}),
+	),
+});
+
 export type StatsSummary = Static<typeof StatsSummaryResponse>;
 export type StatsRecitations = Static<typeof StatsRecitationsResponse>;
+export type StatsQuranDownloads = Static<typeof StatsQuranDownloadsResponse>;

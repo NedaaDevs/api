@@ -181,3 +181,12 @@ export const QuranPlayResponse = t.Object({ ok: t.Literal(true) });
 
 export type QuranPlayBody = Static<typeof QuranPlayBody>;
 export type QuranPlayResponse = Static<typeof QuranPlayResponse>;
+
+// POST /quran/downloads
+export const QuranDownloadBody = t.Object({
+	version: t.String({ minLength: 1, maxLength: 100 }),
+});
+export const QuranDownloadResponse = t.Object({ ok: t.Literal(true) });
+
+export type QuranDownloadBody = Static<typeof QuranDownloadBody>;
+export type QuranDownloadResponse = Static<typeof QuranDownloadResponse>;

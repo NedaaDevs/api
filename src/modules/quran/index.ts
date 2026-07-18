@@ -1,6 +1,9 @@
 import { Elysia } from "elysia";
 import { RECITATION_IDS } from "@/modules/quran/quran.audio";
+import { EDITION_IDS } from "@/modules/quran/quran.editions";
 import {
+	QuranDownloadBody,
+	QuranDownloadResponse,
 	QuranManifestResponse,
 	QuranPlayBody,
 	QuranPlayResponse,
@@ -14,8 +17,6 @@ import { AppError, CODES, ValidationError } from "@/shared/errors";
 const RATE_LIMIT_WINDOW_MS = 3_600_000;
 const RATE_LIMIT_MAX = 60;
 const RATE_LIMIT_MAX_TRACKED_IPS = 10_000;
-let windowStart = Date.now();
-const hits = new Map<string, number>();
 
 // cf-connecting-ip first: the proxy sets it and clients can't forge it through
 // the edge, whereas x-forwarded-for's first hop is always client-supplied.
@@ -24,22 +25,34 @@ const clientIp = (headers: Record<string, string | undefined>): string =>
 	headers["x-forwarded-for"]?.split(",").at(-1)?.trim() ??
 	"unknown";
 
-const checkPlayRateLimit = (ip: string) => {
-	const now = Date.now();
-	if (now - windowStart > RATE_LIMIT_WINDOW_MS) {
-		hits.clear();
-		windowStart = now;
-	}
-	// Bound the map so rotating spoofed identities can't grow it unbounded.
-	if (!hits.has(ip) && hits.size >= RATE_LIMIT_MAX_TRACKED_IPS) {
-		throw new AppError("Too many play requests", 429, CODES.RATE_LIMITED);
-	}
-	const count = (hits.get(ip) ?? 0) + 1;
-	hits.set(ip, count);
-	if (count > RATE_LIMIT_MAX) {
-		throw new AppError("Too many play requests", 429, CODES.RATE_LIMITED);
-	}
+// Per-action fixed-window limiter factory — plays and downloads are rate-limited
+// independently, each with its own window/hit map.
+const makeRateLimiter = (message: string) => {
+	let windowStart = Date.now();
+	const hits = new Map<string, number>();
+
+	return (ip: string) => {
+		const now = Date.now();
+		if (now - windowStart > RATE_LIMIT_WINDOW_MS) {
+			hits.clear();
+			windowStart = now;
+		}
+		// Bound the map so rotating spoofed identities can't grow it unbounded.
+		if (!hits.has(ip) && hits.size >= RATE_LIMIT_MAX_TRACKED_IPS) {
+			throw new AppError(message, 429, CODES.RATE_LIMITED);
+		}
+		const count = (hits.get(ip) ?? 0) + 1;
+		hits.set(ip, count);
+		if (count > RATE_LIMIT_MAX) {
+			throw new AppError(message, 429, CODES.RATE_LIMITED);
+		}
+	};
 };
+
+const LIMITERS = {
+	play: makeRateLimiter("Too many play requests"),
+	download: makeRateLimiter("Too many download requests"),
+} as const;
 
 export const quranModule = new Elysia({
 	name: "quranModule",
@@ -48,19 +61,26 @@ export const quranModule = new Elysia({
 		tags: ["Quran"],
 	},
 })
+	.macro({
+		rateLimit: (action: keyof typeof LIMITERS) => ({
+			beforeHandle({ headers }) {
+				LIMITERS[action](clientIp(headers));
+			},
+		}),
+	})
 	.model({
 		"Quran.Manifest": QuranManifestResponse,
 		"Quran.PlayBody": QuranPlayBody,
 		"Quran.PlayResponse": QuranPlayResponse,
+		"Quran.DownloadBody": QuranDownloadBody,
+		"Quran.DownloadResponse": QuranDownloadResponse,
 	})
 	.get("/manifest", () => QuranService.getManifest(), {
 		response: "Quran.Manifest",
 	})
 	.post(
 		"/plays",
-		({ body, headers, status }) => {
-			checkPlayRateLimit(clientIp(headers));
-
+		({ body, status }) => {
 			if (!RECITATION_IDS.has(body.recitationId)) {
 				throw new ValidationError(`Unknown recitationId: ${body.recitationId}`);
 			}
@@ -69,7 +89,24 @@ export const quranModule = new Elysia({
 			return status(202, { ok: true } as const);
 		},
 		{
+			rateLimit: "play",
 			body: "Quran.PlayBody",
 			response: { 202: "Quran.PlayResponse" },
+		},
+	)
+	.post(
+		"/downloads",
+		({ body, status }) => {
+			if (!EDITION_IDS.has(body.version)) {
+				throw new ValidationError(`Unknown version: ${body.version}`);
+			}
+
+			StatsService.recordDownload(body.version);
+			return status(202, { ok: true } as const);
+		},
+		{
+			rateLimit: "download",
+			body: "Quran.DownloadBody",
+			response: { 202: "Quran.DownloadResponse" },
 		},
 	);

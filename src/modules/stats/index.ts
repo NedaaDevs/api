@@ -1,9 +1,10 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { Elysia } from "elysia";
 import { env } from "@/config/env";
-import { RECITATION_IDS } from "@/modules/quran/quran.audio";
 import {
 	StatsPeriodQuery,
+	StatsQuranDownloadsQuery,
+	StatsQuranDownloadsResponse,
 	StatsRecitationsQuery,
 	StatsRecitationsResponse,
 	StatsSummaryResponse,
@@ -31,54 +32,53 @@ export const statsModule = new Elysia({
 		tags: ["Stats"],
 	},
 })
+	.macro({
+		admin: {
+			beforeHandle({ headers }) {
+				if (!isAdmin(headers, env.ADMIN_API_KEY)) {
+					throw new AppError("Unauthorized", 401, CODES.UNAUTHORIZED);
+				}
+			},
+		},
+	})
 	.model({
 		"Stats.PeriodQuery": StatsPeriodQuery,
 		"Stats.Summary": StatsSummaryResponse,
 		"Stats.RecitationsQuery": StatsRecitationsQuery,
 		"Stats.Recitations": StatsRecitationsResponse,
+		"Stats.QuranDownloadsQuery": StatsQuranDownloadsQuery,
+		"Stats.QuranDownloads": StatsQuranDownloadsResponse,
 	})
 	.get(
 		"/summary",
 		({ query }) => StatsService.getSummary(query.period ?? "24h"),
 		{
+			admin: true,
 			query: "Stats.PeriodQuery",
 			response: "Stats.Summary",
-			beforeHandle({ headers }) {
-				if (!isAdmin(headers, env.ADMIN_API_KEY)) {
-					throw new AppError("Unauthorized", 401, CODES.UNAUTHORIZED);
-				}
-			},
 		},
 	)
 	.get(
 		"/recitations",
-		({ query }) => {
-			const period = query.period ?? "30d";
-			const plays = StatsService.getRecitationPlays(period);
-			const playsById = new Map(plays.map((p) => [p.recitationId, p.plays]));
-
-			const recitations = [...RECITATION_IDS].map((recitationId) => ({
-				recitationId,
-				plays: playsById.get(recitationId) ?? 0,
-			}));
-			for (const p of plays) {
-				if (!RECITATION_IDS.has(p.recitationId)) recitations.push(p);
-			}
-
-			recitations.sort(
-				(a, b) =>
-					b.plays - a.plays || a.recitationId.localeCompare(b.recitationId),
-			);
-
-			return { period, recitations };
-		},
+		({ query }) => ({
+			period: query.period,
+			recitations: StatsService.getRecitationPlays(query.period),
+		}),
 		{
+			admin: true,
 			query: "Stats.RecitationsQuery",
 			response: "Stats.Recitations",
-			beforeHandle({ headers }) {
-				if (!isAdmin(headers, env.ADMIN_API_KEY)) {
-					throw new AppError("Unauthorized", 401, CODES.UNAUTHORIZED);
-				}
-			},
+		},
+	)
+	.get(
+		"/quran-downloads",
+		({ query }) => ({
+			period: query.period,
+			downloads: StatsService.getQuranDownloads(query.period),
+		}),
+		{
+			admin: true,
+			query: "Stats.QuranDownloadsQuery",
+			response: "Stats.QuranDownloads",
 		},
 	);

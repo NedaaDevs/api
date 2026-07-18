@@ -1,9 +1,13 @@
-import type { Database } from "bun:sqlite";
+import { Database } from "bun:sqlite";
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { Elysia } from "elysia";
 import { env } from "@/config/env";
 import { quranModule } from "@/modules/quran";
 import { RECITATION_IDS } from "@/modules/quran/quran.audio";
+import { EDITION_IDS } from "@/modules/quran/quran.editions";
 import { isAdmin, statsModule } from "@/modules/stats";
 import type { StatEntry } from "@/modules/stats/stats.service";
 import { StatsService } from "@/modules/stats/stats.service";
@@ -25,9 +29,26 @@ const adminHeaders = { "x-admin-key": env.ADMIN_API_KEY };
 const getSummaryRoute = (headers: Record<string, string> = {}) =>
 	statsApp.handle(new Request("http://localhost/stats/summary", { headers }));
 
-const getRecitationsRoute = (headers: Record<string, string> = adminHeaders) =>
+const getRecitationsRoute = (
+	headers: Record<string, string> = adminHeaders,
+	period?: string,
+) =>
 	statsApp.handle(
-		new Request("http://localhost/stats/recitations", { headers }),
+		new Request(
+			`http://localhost/stats/recitations${period ? `?period=${period}` : ""}`,
+			{ headers },
+		),
+	);
+
+const getQuranDownloadsRoute = (
+	headers: Record<string, string> = adminHeaders,
+	period?: string,
+) =>
+	statsApp.handle(
+		new Request(
+			`http://localhost/stats/quran-downloads${period ? `?period=${period}` : ""}`,
+			{ headers },
+		),
 	);
 
 const postPlay = (recitationId: string, xff: string) =>
@@ -39,6 +60,18 @@ const postPlay = (recitationId: string, xff: string) =>
 				"x-forwarded-for": xff,
 			},
 			body: JSON.stringify({ recitationId }),
+		}),
+	);
+
+const postDownload = (version: string, xff: string) =>
+	quranApp.handle(
+		new Request("http://localhost/quran/downloads", {
+			method: "POST",
+			headers: {
+				"content-type": "application/json",
+				"x-forwarded-for": xff,
+			},
+			body: JSON.stringify({ version }),
 		}),
 	);
 
@@ -64,6 +97,13 @@ const trackPlay = (id: string, n = 1) => {
 	playCounts.set(id, (playCounts.get(id) ?? 0) + n);
 };
 
+// Running totals of quran downloads this file records, for the cumulative
+// /stats/quran-downloads assertions at the end of the file.
+const downloadCounts = new Map<string, number>();
+const trackDownload = (version: string, n = 1) => {
+	downloadCounts.set(version, (downloadCounts.get(version) ?? 0) + n);
+};
+
 describe("isAdmin", () => {
 	test("false when key is undefined", () => {
 		expect(isAdmin({ "x-admin-key": "anything" }, undefined)).toBe(false);
@@ -83,6 +123,88 @@ describe("isAdmin", () => {
 
 	test("true only on an exact match", () => {
 		expect(isAdmin({ "x-admin-key": "secret" }, "secret")).toBe(true);
+	});
+});
+
+describe("daily bucket backfill", () => {
+	// Isolated file-backed instance, not the shared :memory: one — this needs
+	// raw rows to exist BEFORE StatsService.init() ever sees the file, so it
+	// exercises the real first-boot migration path. Restores a fresh shared
+	// :memory: instance afterward, so it must run before any other test
+	// touches StatsService state (see "percentiles" below, which documents
+	// the same requirement for its own reasons).
+	test("seeds stats_daily once from pre-existing raw rows, guarded against re-running", () => {
+		StatsService.shutdown();
+		const tmpPath = join(tmpdir(), `stats-backfill-test-${Date.now()}.sqlite`);
+
+		const seed = new Database(tmpPath);
+		seed.run(`
+			CREATE TABLE recitation_plays (
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				recitation_id TEXT NOT NULL,
+				created_at INTEGER NOT NULL DEFAULT (unixepoch())
+			)
+		`);
+		seed.run(`
+			CREATE TABLE quran_downloads (
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				version TEXT NOT NULL,
+				created_at INTEGER NOT NULL DEFAULT (unixepoch())
+			)
+		`);
+		const day1 = Math.floor(new Date("2026-01-01T12:00:00Z").getTime() / 1000);
+		const day2 = Math.floor(new Date("2026-01-02T12:00:00Z").getTime() / 1000);
+		for (const createdAt of [day1, day1, day2]) {
+			seed.run(
+				"INSERT INTO recitation_plays (recitation_id, created_at) VALUES (?, ?)",
+				["backfill-test-id", createdAt],
+			);
+		}
+		seed.run(
+			"INSERT INTO quran_downloads (version, created_at) VALUES (?, ?)",
+			["v1", day1],
+		);
+		seed.close();
+
+		try {
+			StatsService.init(tmpPath);
+			const svc = StatsService as unknown as { db: Database };
+
+			const playBuckets = svc.db
+				.query<{ day: string; count: number }, [string]>(
+					"SELECT day, count FROM stats_daily WHERE key = ? ORDER BY day",
+				)
+				.all("plays:backfill-test-id");
+			expect(playBuckets).toEqual([
+				{ day: "2026-01-01", count: 2 },
+				{ day: "2026-01-02", count: 1 },
+			]);
+
+			const downloadBucket = svc.db
+				.query<{ count: number }, [string, string]>(
+					"SELECT count FROM stats_daily WHERE day = ? AND key = ?",
+				)
+				.get("2026-01-01", "downloads:v1");
+			expect(downloadBucket?.count).toBe(1);
+
+			// Restart against the same file: stats_daily is now non-empty, so the
+			// guard must skip re-running the backfill — no double-counting.
+			StatsService.shutdown();
+			StatsService.init(tmpPath);
+			const afterRestart = (StatsService as unknown as { db: Database }).db
+				.query<{ count: number }, [string, string]>(
+					"SELECT count FROM stats_daily WHERE day = ? AND key = ?",
+				)
+				.get("2026-01-01", "plays:backfill-test-id");
+			expect(afterRestart?.count).toBe(2);
+		} finally {
+			StatsService.shutdown();
+			for (const suffix of ["", "-wal", "-shm"]) {
+				rmSync(`${tmpPath}${suffix}`, { force: true });
+			}
+			// Restore the shared instance the rest of this file runs against.
+			StatsService.init(":memory:");
+		}
 	});
 });
 
@@ -193,6 +315,18 @@ describe("retention sweep", () => {
 			"INSERT INTO recitation_plays (recitation_id, created_at) VALUES (?, ?)",
 			["stale-recitation-id", staleCreatedAt],
 		);
+		svc.db.run(
+			"INSERT INTO quran_downloads (version, created_at) VALUES (?, ?)",
+			["v1", staleCreatedAt],
+		);
+		// A daily bucket dated a year ago — stats_daily has no retention policy,
+		// so the sweep must leave it alone even though it's far older than any
+		// raw row the sweep purges.
+		svc.db.run("INSERT INTO stats_daily (day, key, count) VALUES (?, ?, ?)", [
+			"2025-01-01",
+			"plays:sweep-bucket-test",
+			3,
+		]);
 
 		const beforeLifetime = StatsService.getLifetimeRequests();
 		svc.sweep();
@@ -212,7 +346,159 @@ describe("retention sweep", () => {
 			.get("stale-recitation-id");
 		expect(stalePlays?.c).toBe(0);
 
+		const staleDownloads = svc.db
+			.query<{ c: number }, []>(
+				"SELECT COUNT(*) as c FROM quran_downloads WHERE created_at < unixepoch() - 90*86400",
+			)
+			.get();
+		expect(staleDownloads?.c).toBe(0);
+
+		const bucketRow = svc.db
+			.query<{ count: number }, [string]>(
+				"SELECT count FROM stats_daily WHERE key = ?",
+			)
+			.get("plays:sweep-bucket-test");
+		expect(bucketRow?.count).toBe(3);
+
 		expect(afterLifetime).toBeGreaterThanOrEqual(beforeLifetime);
+	});
+});
+
+describe("lifetime meta counters", () => {
+	test("recordPlay's durable per-recitation counter survives the 90-day sweep", () => {
+		const svc = StatsService as unknown as { db: Database; sweep(): void };
+		const id = "alnufais"; // unused elsewhere in this file — safe to age/sweep in isolation
+
+		StatsService.recordPlay(id);
+		StatsService.flush();
+		const afterRecord =
+			StatsService.getRecitationPlays("all").find((p) => p.recitationId === id)
+				?.plays ?? 0;
+		expect(afterRecord).toBe(1);
+
+		// Age the raw row we just inserted to past retention and sweep it away —
+		// the durable meta counter must still report the lifetime total.
+		const staleCreatedAt = Math.floor(Date.now() / 1000) - 91 * 86_400;
+		svc.db.run(
+			"UPDATE recitation_plays SET created_at = ? WHERE recitation_id = ?",
+			[staleCreatedAt, id],
+		);
+		svc.sweep();
+
+		const rawRows = svc.db
+			.query<{ c: number }, [string]>(
+				"SELECT COUNT(*) as c FROM recitation_plays WHERE recitation_id = ?",
+			)
+			.get(id);
+		expect(rawRows?.c).toBe(0);
+
+		const afterSweep =
+			StatsService.getRecitationPlays("all").find((p) => p.recitationId === id)
+				?.plays ?? 0;
+		expect(afterSweep).toBe(1);
+	});
+
+	test("recordDownload's durable per-version counter survives the 90-day sweep", () => {
+		const svc = StatsService as unknown as { db: Database; sweep(): void };
+		const version = "v1";
+
+		const beforeRecord =
+			StatsService.getQuranDownloads("all").find((d) => d.version === version)
+				?.downloads ?? 0;
+
+		StatsService.recordDownload(version);
+		StatsService.flush();
+		trackDownload(version, 1); // stats_daily bucket writes at flush, so this
+		// download counts toward month/week/year windows regardless of the raw
+		// row's fate below — see the assertion this feeds at the end of the file.
+		const afterRecord =
+			StatsService.getQuranDownloads("all").find((d) => d.version === version)
+				?.downloads ?? 0;
+		expect(afterRecord).toBe(beforeRecord + 1);
+
+		// Age only the row we just inserted (the newest) to past retention and
+		// sweep it away — the durable meta counter must be unaffected.
+		const staleCreatedAt = Math.floor(Date.now() / 1000) - 91 * 86_400;
+		svc.db.run(
+			"UPDATE quran_downloads SET created_at = ? WHERE id = (SELECT MAX(id) FROM quran_downloads WHERE version = ?)",
+			[staleCreatedAt, version],
+		);
+		svc.sweep();
+
+		const afterSweep =
+			StatsService.getQuranDownloads("all").find((d) => d.version === version)
+				?.downloads ?? 0;
+		expect(afterSweep).toBe(afterRecord);
+	});
+});
+
+describe("daily bucket upsert", () => {
+	test("flush upserts one stats_daily row per (day, key), accumulating counts", () => {
+		const svc = StatsService as unknown as { db: Database };
+		const id = "bucket-upsert-test-recitation"; // synthetic — dedicated to this test
+		const today = new Date().toISOString().slice(0, 10);
+
+		StatsService.recordPlay(id);
+		StatsService.recordPlay(id);
+		StatsService.flush();
+
+		const afterFirstFlush = svc.db
+			.query<{ count: number }, [string, string]>(
+				"SELECT count FROM stats_daily WHERE day = ? AND key = ?",
+			)
+			.get(today, `plays:${id}`);
+		expect(afterFirstFlush?.count).toBe(2);
+
+		StatsService.recordPlay(id);
+		StatsService.flush();
+
+		const rows = svc.db
+			.query<{ count: number }, [string, string]>(
+				"SELECT count FROM stats_daily WHERE day = ? AND key = ?",
+			)
+			.all(today, `plays:${id}`);
+		expect(rows.length).toBe(1); // upsert, not a second row for the same day
+		expect(rows[0]?.count).toBe(3);
+	});
+});
+
+describe("counter window sums", () => {
+	test("week/month/year sum durable daily buckets over the right trailing window", () => {
+		const svc = StatsService as unknown as { db: Database };
+		const key = "downloads:window-sum-test-version"; // synthetic — dedicated to this test
+		const dayAgo = (n: number) =>
+			new Date(Date.now() - n * 86_400_000).toISOString().slice(0, 10);
+
+		const seedBucket = (daysAgo: number, count: number) => {
+			svc.db.run("INSERT INTO stats_daily (day, key, count) VALUES (?, ?, ?)", [
+				dayAgo(daysAgo),
+				key,
+				count,
+			]);
+		};
+
+		seedBucket(0, 5); // today — inside every window
+		seedBucket(3, 2); // inside week/month/year
+		seedBucket(20, 4); // outside week, inside month/year
+		seedBucket(100, 8); // outside week/month, inside year
+		seedBucket(400, 16); // outside every window
+
+		const version = "window-sum-test-version";
+
+		const week = StatsService.getQuranDownloads("week").find(
+			(d) => d.version === version,
+		);
+		expect(week?.downloads).toBe(7); // day0 + day3
+
+		const month = StatsService.getQuranDownloads("month").find(
+			(d) => d.version === version,
+		);
+		expect(month?.downloads).toBe(11); // day0 + day3 + day20
+
+		const year = StatsService.getQuranDownloads("year").find(
+			(d) => d.version === version,
+		);
+		expect(year?.downloads).toBe(19); // day0 + day3 + day20 + day100
 	});
 });
 
@@ -282,7 +568,7 @@ describe("recitation plays service", () => {
 		trackPlay("minshawi-murattal", 2);
 		trackPlay("muhammad-ayyoob", 1);
 
-		const plays = StatsService.getRecitationPlays("24h");
+		const plays = StatsService.getRecitationPlays("day");
 		const minshawi = plays.find((p) => p.recitationId === "minshawi-murattal");
 		const ayyoob = plays.find((p) => p.recitationId === "muhammad-ayyoob");
 		expect(minshawi?.plays).toBe(2);
@@ -298,6 +584,32 @@ describe("recitation plays service", () => {
 
 		for (let i = 1; i < plays.length; i++) {
 			expect(plays[i - 1].plays).toBeGreaterThanOrEqual(plays[i].plays);
+		}
+	});
+});
+
+describe("quran downloads service", () => {
+	test("recordDownload aggregates counts per version, ordered downloads desc", () => {
+		StatsService.recordDownload("v1");
+		StatsService.recordDownload("v1");
+		StatsService.recordDownload("v2");
+		trackDownload("v1", 2);
+		trackDownload("v2", 1);
+
+		const downloads = StatsService.getQuranDownloads("day");
+		const v1 = downloads.find((d) => d.version === "v1");
+		const v2 = downloads.find((d) => d.version === "v2");
+		expect(v1?.downloads).toBe(2);
+		expect(v2?.downloads).toBe(1);
+
+		const v1Idx = downloads.findIndex((d) => d.version === "v1");
+		const v2Idx = downloads.findIndex((d) => d.version === "v2");
+		expect(v1Idx).toBeLessThan(v2Idx);
+
+		for (let i = 1; i < downloads.length; i++) {
+			expect(downloads[i - 1].downloads).toBeGreaterThanOrEqual(
+				downloads[i].downloads,
+			);
 		}
 	});
 });
@@ -330,12 +642,39 @@ describe("plays route", () => {
 	});
 });
 
+describe("downloads route", () => {
+	test("202 + {ok:true} for a real version", async () => {
+		const res = await postDownload("v4", "10.30.0.1");
+		expect(res.status).toBe(202);
+		const body = await res.json();
+		expect(body).toEqual({ ok: true });
+		trackDownload("v4", 1);
+	});
+
+	test("400 for an unknown version", async () => {
+		const res = await postDownload("not-a-real-version", "10.30.0.2");
+		expect(res.status).toBe(400);
+	});
+
+	test("429 after 60 requests/hour from the same IP", async () => {
+		const ip = "10.30.0.3";
+		for (let i = 0; i < 60; i++) {
+			const res = await postDownload("v2", ip);
+			expect(res.status).toBe(202);
+		}
+		trackDownload("v2", 60);
+
+		const blocked = await postDownload("v2", ip);
+		expect(blocked.status).toBe(429);
+	});
+});
+
 describe("/stats/recitations", () => {
-	test("defaults to 30d, lists every known id with tracked counts, sorted desc", async () => {
+	test("defaults to month, lists every known id with tracked counts, sorted desc", async () => {
 		const res = await getRecitationsRoute();
 		expect(res.status).toBe(200);
 		const body = await res.json();
-		expect(body.period).toBe("30d");
+		expect(body.period).toBe("month");
 		expect(body.recitations.length).toBeGreaterThanOrEqual(RECITATION_IDS.size);
 
 		const byId = new Map<string, number>(
@@ -360,6 +699,114 @@ describe("/stats/recitations", () => {
 			expect(body.recitations[i - 1].plays).toBeGreaterThanOrEqual(
 				body.recitations[i].plays,
 			);
+		}
+	});
+
+	test("period=all returns lifetime counts, including the alnufais play swept from raw rows", async () => {
+		const res = await getRecitationsRoute(adminHeaders, "all");
+		expect(res.status).toBe(200);
+		const body = await res.json();
+		expect(body.period).toBe("all");
+		expect(body.recitations.length).toBeGreaterThanOrEqual(RECITATION_IDS.size);
+
+		const byId = new Map<string, number>(
+			body.recitations.map((r: { recitationId: string; plays: number }) => [
+				r.recitationId,
+				r.plays,
+			]),
+		);
+
+		for (const id of RECITATION_IDS) {
+			expect(byId.has(id)).toBe(true);
+		}
+
+		// Recorded then swept from recitation_plays in "lifetime meta counters" —
+		// only the durable counter keeps it alive under period=all.
+		expect(byId.get("alnufais")).toBe(1);
+
+		for (let i = 1; i < body.recitations.length; i++) {
+			expect(body.recitations[i - 1].plays).toBeGreaterThanOrEqual(
+				body.recitations[i].plays,
+			);
+		}
+	});
+
+	test("accepts period=day/week/year", async () => {
+		for (const period of ["day", "week", "year"]) {
+			const res = await getRecitationsRoute(adminHeaders, period);
+			expect(res.status).toBe(200);
+			const body = await res.json();
+			expect(body.period).toBe(period);
+		}
+	});
+});
+
+describe("/stats/quran-downloads", () => {
+	test("defaults to month, lists every known version with tracked counts, sorted desc", async () => {
+		const res = await getQuranDownloadsRoute();
+		expect(res.status).toBe(200);
+		const body = await res.json();
+		expect(body.period).toBe("month");
+		expect(body.downloads.length).toBeGreaterThanOrEqual(EDITION_IDS.size);
+
+		const byVersion = new Map<string, number>(
+			body.downloads.map((d: { version: string; downloads: number }) => [
+				d.version,
+				d.downloads,
+			]),
+		);
+
+		for (const version of EDITION_IDS) {
+			expect(byVersion.has(version)).toBe(true);
+		}
+
+		for (const [version, downloads] of downloadCounts) {
+			expect(byVersion.get(version)).toBe(downloads);
+		}
+
+		for (let i = 1; i < body.downloads.length; i++) {
+			expect(body.downloads[i - 1].downloads).toBeGreaterThanOrEqual(
+				body.downloads[i].downloads,
+			);
+		}
+	});
+
+	test("period=all returns lifetime counts, unaffected by the v1 row swept from raw rows", async () => {
+		const res = await getQuranDownloadsRoute(adminHeaders, "all");
+		expect(res.status).toBe(200);
+		const body = await res.json();
+		expect(body.period).toBe("all");
+		expect(body.downloads.length).toBeGreaterThanOrEqual(EDITION_IDS.size);
+
+		const byVersion = new Map<string, number>(
+			body.downloads.map((d: { version: string; downloads: number }) => [
+				d.version,
+				d.downloads,
+			]),
+		);
+
+		for (const version of EDITION_IDS) {
+			expect(byVersion.has(version)).toBe(true);
+		}
+
+		// Lifetime total matches the tracked count exactly — the download
+		// recorded then swept from quran_downloads in "lifetime meta counters"
+		// is already folded into downloadCounts.
+		expect(byVersion.get("v1")).toBe(downloadCounts.get("v1") ?? 0);
+
+		for (let i = 1; i < body.downloads.length; i++) {
+			expect(body.downloads[i - 1].downloads).toBeGreaterThanOrEqual(
+				body.downloads[i].downloads,
+			);
+		}
+	});
+
+	test("accepts period=day/week/year", async () => {
+		for (const period of ["day", "week", "year"]) {
+			const res = await getQuranDownloadsRoute(adminHeaders, period);
+			expect(res.status).toBe(200);
+			const body = await res.json();
+			expect(body.period).toBe(period);
 		}
 	});
 });
