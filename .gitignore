@@ -44,8 +44,3 @@ yarn-error.log*
 package-lock.json
 **/*.bun
 
-.claude
-.agent*
-data/
-output
-scripts/measure-quran-output.ts

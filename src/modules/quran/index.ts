@@ -15,8 +15,10 @@ import { AppError, CODES, ValidationError } from "@/shared/errors";
 // Fixed-window limiter, in-memory only — the IP is never logged or persisted,
 // it only ever lives as a key in this map for the current window.
 const RATE_LIMIT_WINDOW_MS = 3_600_000;
-const RATE_LIMIT_MAX = 60;
-const RATE_LIMIT_MAX_TRACKED_IPS = 10_000;
+// Sized for carrier CGNAT, where thousands of subscribers share one public
+// address — a per-user ceiling here would 429 whole mobile networks.
+export const RATE_LIMIT_MAX = 3_000;
+const RATE_LIMIT_MAX_TRACKED_IPS = 100_000;
 
 // cf-connecting-ip first: the proxy sets it and clients can't forge it through
 // the edge, whereas x-forwarded-for's first hop is always client-supplied.
@@ -38,9 +40,11 @@ const makeRateLimiter = (message: string) => {
 			windowStart = now;
 		}
 		// Bound the map so rotating spoofed identities can't grow it unbounded.
-		if (!hits.has(ip) && hits.size >= RATE_LIMIT_MAX_TRACKED_IPS) {
-			throw new AppError(message, 429, CODES.RATE_LIMITED);
-		}
+		// Fails open: once full, untracked IPs pass rather than 429: these are
+		// fire-and-forget stat beacons, and blocking every new IP for the rest of
+		// the window punishes real users to stop counter inflation.
+		if (!hits.has(ip) && hits.size >= RATE_LIMIT_MAX_TRACKED_IPS) return;
+
 		const count = (hits.get(ip) ?? 0) + 1;
 		hits.set(ip, count);
 		if (count > RATE_LIMIT_MAX) {

@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Elysia } from "elysia";
 import { env } from "@/config/env";
-import { quranModule } from "@/modules/quran";
+import { quranModule, RATE_LIMIT_MAX } from "@/modules/quran";
 import { RECITATION_IDS } from "@/modules/quran/quran.audio";
 import { EDITION_IDS } from "@/modules/quran/quran.editions";
 import { isAdmin, statsModule } from "@/modules/stats";
@@ -628,14 +628,14 @@ describe("plays route", () => {
 		expect(res.status).toBe(400);
 	});
 
-	test("429 after 60 requests/hour from the same IP", async () => {
+	test("429 once the same IP exceeds the hourly cap", async () => {
 		const ip = "10.20.0.3";
 		const id = "khalid-al-jalil";
-		for (let i = 0; i < 60; i++) {
+		for (let i = 0; i < RATE_LIMIT_MAX; i++) {
 			const res = await postPlay(id, ip);
 			expect(res.status).toBe(202);
 		}
-		trackPlay(id, 60);
+		trackPlay(id, RATE_LIMIT_MAX);
 
 		const blocked = await postPlay(id, ip);
 		expect(blocked.status).toBe(429);
@@ -656,13 +656,13 @@ describe("downloads route", () => {
 		expect(res.status).toBe(400);
 	});
 
-	test("429 after 60 requests/hour from the same IP", async () => {
+	test("429 once the same IP exceeds the hourly cap", async () => {
 		const ip = "10.30.0.3";
-		for (let i = 0; i < 60; i++) {
+		for (let i = 0; i < RATE_LIMIT_MAX; i++) {
 			const res = await postDownload("v2", ip);
 			expect(res.status).toBe(202);
 		}
-		trackDownload("v2", 60);
+		trackDownload("v2", RATE_LIMIT_MAX);
 
 		const blocked = await postDownload("v2", ip);
 		expect(blocked.status).toBe(429);
