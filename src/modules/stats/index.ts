@@ -7,6 +7,8 @@ import {
 	StatsQuranDownloadsResponse,
 	StatsRecitationsQuery,
 	StatsRecitationsResponse,
+	StatsRequestsQuery,
+	StatsRequestsResponse,
 	StatsSummaryResponse,
 } from "@/modules/stats/stats.schemas";
 import { StatsService } from "@/modules/stats/stats.service";
@@ -48,6 +50,8 @@ export const statsModule = new Elysia({
 		"Stats.Recitations": StatsRecitationsResponse,
 		"Stats.QuranDownloadsQuery": StatsQuranDownloadsQuery,
 		"Stats.QuranDownloads": StatsQuranDownloadsResponse,
+		"Stats.RequestsQuery": StatsRequestsQuery,
+		"Stats.Requests": StatsRequestsResponse,
 	})
 	.get(
 		"/summary",
@@ -80,5 +84,17 @@ export const statsModule = new Elysia({
 			admin: true,
 			query: "Stats.QuranDownloadsQuery",
 			response: "Stats.QuranDownloads",
+		},
+	)
+	.get(
+		"/requests",
+		({ query }) => ({
+			period: query.period,
+			requests: StatsService.getRequestsByModule(query.period),
+		}),
+		{
+			admin: true,
+			query: "Stats.RequestsQuery",
+			response: "Stats.Requests",
 		},
 	);

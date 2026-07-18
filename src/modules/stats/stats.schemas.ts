@@ -83,6 +83,19 @@ export const StatsQuranDownloadsResponse = t.Object({
 	),
 });
 
+export const StatsRequestsQuery = CounterPeriodQuery;
+
+export const StatsRequestsResponse = t.Object({
+	period: counterPeriod(),
+	requests: t.Array(
+		t.Object({
+			module: t.String(),
+			requests: t.Number(),
+		}),
+	),
+});
+
 export type StatsSummary = Static<typeof StatsSummaryResponse>;
 export type StatsRecitations = Static<typeof StatsRecitationsResponse>;
 export type StatsQuranDownloads = Static<typeof StatsQuranDownloadsResponse>;
+export type StatsRequests = Static<typeof StatsRequestsResponse>;

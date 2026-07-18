@@ -40,6 +40,17 @@ const getRecitationsRoute = (
 		),
 	);
 
+const getRequestsRoute = (
+	headers: Record<string, string> = adminHeaders,
+	period?: string,
+) =>
+	statsApp.handle(
+		new Request(
+			`http://localhost/stats/requests${period ? `?period=${period}` : ""}`,
+			{ headers },
+		),
+	);
+
 const getQuranDownloadsRoute = (
 	headers: Record<string, string> = adminHeaders,
 	period?: string,
@@ -152,6 +163,16 @@ describe("daily bucket backfill", () => {
 				created_at INTEGER NOT NULL DEFAULT (unixepoch())
 			)
 		`);
+		seed.run(`
+			CREATE TABLE request_stats (
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				endpoint TEXT NOT NULL,
+				method TEXT NOT NULL,
+				status_code INTEGER NOT NULL,
+				response_time_ms INTEGER NOT NULL,
+				created_at INTEGER NOT NULL DEFAULT (unixepoch())
+			)
+		`);
 		const day1 = Math.floor(new Date("2026-01-01T12:00:00Z").getTime() / 1000);
 		const day2 = Math.floor(new Date("2026-01-02T12:00:00Z").getTime() / 1000);
 		for (const createdAt of [day1, day1, day2]) {
@@ -164,6 +185,19 @@ describe("daily bucket backfill", () => {
 			"INSERT INTO quran_downloads (version, created_at) VALUES (?, ?)",
 			["v1", day1],
 		);
+		// Two quran hits and one unknown-module hit on day1: only the former
+		// should bucket, matching how moduleOf filters health/scanner junk.
+		for (const [endpoint, createdAt] of [
+			["/v3/quran/manifest", day1],
+			["/v3/quran/manifest", day1],
+			["/health", day1],
+			["/v3/prayers/today", day2],
+		] as const) {
+			seed.run(
+				"INSERT INTO request_stats (endpoint, method, status_code, response_time_ms, created_at) VALUES (?, 'GET', 200, 5, ?)",
+				[endpoint, createdAt],
+			);
+		}
 		seed.close();
 
 		try {
@@ -178,6 +212,16 @@ describe("daily bucket backfill", () => {
 			expect(playBuckets).toEqual([
 				{ day: "2026-01-01", count: 2 },
 				{ day: "2026-01-02", count: 1 },
+			]);
+
+			const requestBuckets = svc.db
+				.query<{ day: string; key: string; count: number }, []>(
+					"SELECT day, key, count FROM stats_daily WHERE key LIKE 'requests:%' ORDER BY day",
+				)
+				.all();
+			expect(requestBuckets).toEqual([
+				{ day: "2026-01-01", key: "requests:quran", count: 2 },
+				{ day: "2026-01-02", key: "requests:prayers", count: 1 },
 			]);
 
 			const downloadBucket = svc.db
@@ -830,5 +874,132 @@ describe("intrusion attempts", () => {
 		});
 
 		expect(StatsService.getSummary("24h").intrusionAttempts).toBe(before + 4);
+	});
+});
+
+describe("per-module request buckets", () => {
+	test("flush buckets known modules by day and skips junk endpoints", () => {
+		const svc = StatsService as unknown as { db: Database };
+		const today = new Date().toISOString().slice(0, 10);
+
+		const before = svc.db
+			.query<{ count: number }, [string]>(
+				"SELECT count FROM stats_daily WHERE day = ? AND key = 'requests:athkar'",
+			)
+			.get(today);
+
+		for (let i = 0; i < 3; i++) {
+			StatsService.record({
+				endpoint: "/v3/athkar/list",
+				method: "GET",
+				statusCode: 200,
+				responseTimeMs: 5,
+			});
+		}
+		// No module — must not produce a bucket of its own.
+		StatsService.record({
+			endpoint: "/health",
+			method: "GET",
+			statusCode: 200,
+			responseTimeMs: 1,
+		});
+		StatsService.flush();
+
+		const after = svc.db
+			.query<{ count: number }, [string]>(
+				"SELECT count FROM stats_daily WHERE day = ? AND key = 'requests:athkar'",
+			)
+			.get(today);
+		expect(after?.count).toBe((before?.count ?? 0) + 3);
+
+		const junk = svc.db
+			.query<{ c: number }, []>(
+				"SELECT COUNT(*) as c FROM stats_daily WHERE key = 'requests:health'",
+			)
+			.get();
+		expect(junk?.c).toBe(0);
+	});
+
+	test("getRequestsByModule 0-fills every known module, sorted desc", () => {
+		const rows = StatsService.getRequestsByModule("all");
+		const byModule = new Map(rows.map((r) => [r.module, r.requests]));
+
+		for (const module of [
+			"prayers",
+			"quran",
+			"athkar",
+			"locations",
+			"feedback",
+		]) {
+			expect(byModule.has(module)).toBe(true);
+		}
+		expect(byModule.get("athkar")).toBeGreaterThan(0);
+
+		for (let i = 1; i < rows.length; i++) {
+			expect(rows[i - 1].requests).toBeGreaterThanOrEqual(rows[i].requests);
+		}
+	});
+});
+
+describe("stats_meta holds only scalars", () => {
+	test("flush no longer writes per-id keys, so buckets are the sole source", () => {
+		const svc = StatsService as unknown as { db: Database };
+
+		StatsService.recordPlay("abdullah-khayat");
+		StatsService.recordDownload("v1");
+		StatsService.flush();
+		trackPlay("abdullah-khayat", 1);
+		trackDownload("v1", 1);
+
+		const perId = svc.db
+			.query<{ c: number }, []>(
+				"SELECT COUNT(*) as c FROM stats_meta WHERE key LIKE 'plays:%' OR key LIKE 'downloads:%'",
+			)
+			.get();
+		expect(perId?.c).toBe(0);
+
+		// The scalars are the part that genuinely can't be derived.
+		const scalars = svc.db
+			.query<{ key: string }, []>("SELECT key FROM stats_meta ORDER BY key")
+			.all()
+			.map((r) => r.key);
+		expect(scalars).toEqual([
+			"total_downloads",
+			"total_plays",
+			"total_requests",
+		]);
+	});
+});
+
+describe("/stats/requests", () => {
+	test("401 without the admin key", async () => {
+		const res = await getRequestsRoute({});
+		expect(res.status).toBe(401);
+	});
+
+	test("defaults to month and lists every known module", async () => {
+		const res = await getRequestsRoute();
+		expect(res.status).toBe(200);
+		const body = await res.json();
+		expect(body.period).toBe("month");
+
+		const modules = body.requests.map((r: { module: string }) => r.module);
+		for (const module of [
+			"prayers",
+			"quran",
+			"athkar",
+			"locations",
+			"feedback",
+		]) {
+			expect(modules).toContain(module);
+		}
+	});
+
+	test("accepts every counter period", async () => {
+		for (const period of ["day", "week", "month", "year", "all"]) {
+			const res = await getRequestsRoute(adminHeaders, period);
+			expect(res.status).toBe(200);
+			expect((await res.json()).period).toBe(period);
+		}
 	});
 });

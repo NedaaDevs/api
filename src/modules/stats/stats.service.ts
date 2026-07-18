@@ -45,19 +45,16 @@ interface MetaValueRow {
 	value: number;
 }
 
-// A lifetime meta counter row — `plays:{recitationId}` / `downloads:{version}`
-// keys, alongside the pre-existing scalar keys (`total_requests` etc).
-interface MetaKVRow {
-	key: string;
-	value: number;
-}
-
-// A daily-bucket rollup row — same `plays:{id}` / `downloads:{version}` key
-// families as MetaKVRow, summed for one calendar day (UTC).
+// A daily-bucket rollup row — `plays:{id}` / `downloads:{version}` /
+// `requests:{module}` key families, summed for one calendar day (UTC).
 interface DailyBucketRow {
 	key: string;
 	total: number;
 }
+
+// UTC calendar day, `daysAgo` back from now. stats_daily keys off these.
+const dayString = (daysAgo = 0) =>
+	new Date(Date.now() - daysAgo * 86_400_000).toISOString().slice(0, 10);
 
 const FLUSH_INTERVAL_MS = 10_000;
 const RETENTION_DAYS = 90;
@@ -66,11 +63,10 @@ const SWEEP_INTERVAL_MS = 3_600_000;
 const PERIOD_HOURS = { "24h": 24, "7d": 168, "30d": 720 } as const;
 export type Period = keyof typeof PERIOD_HOURS;
 
-// Play/download counter windows — distinct from `Period` above (which stays
-// 24h/7d/30d for the request-latency summary and keeps its own semantics).
-// "day" reads raw rows (sub-day precision); "week"/"month"/"year" sum the
-// durable daily buckets (immune to the 90-day raw-row sweep); "all" reads the
-// durable lifetime meta counters.
+// Counter windows — distinct from `Period` above (which stays 24h/7d/30d for
+// the request-latency summary and keeps its own semantics). "day" reads raw
+// rows where one exists (sub-day precision), otherwise today's bucket;
+// everything else sums durable daily buckets, immune to the 90-day raw sweep.
 const COUNTER_PERIOD_DAYS = { week: 7, month: 30, year: 365 } as const;
 export type CounterPeriod = "day" | "week" | "month" | "year" | "all";
 export const COUNTER_PERIODS: readonly CounterPeriod[] = [
@@ -122,12 +118,12 @@ export abstract class StatsService {
 	private static insertStmt: ReturnType<Database["prepare"]>;
 	private static insertPlayStmt: ReturnType<Database["prepare"]>;
 	private static insertDownloadStmt: ReturnType<Database["prepare"]>;
-	// Generic lifetime-counter upsert — backs total_requests/total_plays/
-	// total_downloads AND the per-id plays:{id}/downloads:{version} keys, so
-	// every durable counter goes through one mechanism.
+	// Lifetime scalar upsert — total_requests/total_plays/total_downloads.
+	// Per-id counts live in stats_daily instead; only these three can't be
+	// derived from it.
 	private static incrementMetaStmt: ReturnType<Database["prepare"]>;
-	// Per-(day, key) rollup upsert — same key families as incrementMetaStmt,
-	// bucketed by calendar day. Backs the week/month/year counter windows.
+	// Per-(day, key) rollup upsert — the sole store for per-id counts, and what
+	// every counter window above "day" reads.
 	private static incrementDailyStmt: ReturnType<Database["prepare"]>;
 	private static flushTimer: Timer;
 	private static sweepTimer: Timer;
@@ -198,7 +194,11 @@ export abstract class StatsService {
 				PRIMARY KEY (day, key)
 			)
 		`);
-		StatsService.backfillDailyBucketsOnce();
+		// Per-id lifetime counts moved to stats_daily, which holds strictly more
+		// (it got the raw-row backfill these keys never did). Dead rows now.
+		StatsService.db.run(
+			"DELETE FROM stats_meta WHERE key LIKE 'plays:%' OR key LIKE 'downloads:%'",
+		);
 
 		StatsService.insertStmt = StatsService.db.prepare(
 			"INSERT INTO request_stats (endpoint, method, status_code, response_time_ms) VALUES ($endpoint, $method, $statusCode, $responseTimeMs)",
@@ -209,14 +209,17 @@ export abstract class StatsService {
 		StatsService.insertDownloadStmt = StatsService.db.prepare(
 			"INSERT INTO quran_downloads (version) VALUES ($version)",
 		);
-		// Upsert: first hit for a key creates the row at $n, later hits add to it —
-		// covers both the pre-seeded scalar keys and the never-seeded per-id keys.
+		// Upsert rather than UPDATE so a missing scalar key self-heals.
 		StatsService.incrementMetaStmt = StatsService.db.prepare(
 			"INSERT INTO stats_meta (key, value) VALUES ($key, $n) ON CONFLICT(key) DO UPDATE SET value = value + $n",
 		);
 		StatsService.incrementDailyStmt = StatsService.db.prepare(
 			"INSERT INTO stats_daily (day, key, count) VALUES ($day, $key, $n) ON CONFLICT(day, key) DO UPDATE SET count = count + $n",
 		);
+
+		// After the prepares — backfillRequestBucketsOnce needs incrementDailyStmt.
+		StatsService.backfillDailyBucketsOnce();
+		StatsService.backfillRequestBucketsOnce();
 
 		StatsService.initialized = true;
 
@@ -267,6 +270,46 @@ export abstract class StatsService {
 		`);
 	}
 
+	// Seeds `requests:{module}` buckets from surviving request_stats rows, so
+	// permanent traffic history starts from whatever the 90-day sweep still
+	// holds rather than from deploy. Guarded on the family being absent, so it
+	// runs once. Aggregates through `moduleOf` in JS rather than reimplementing
+	// its path parsing in SQL, where the two could silently drift apart.
+	private static backfillRequestBucketsOnce(): void {
+		const seeded = StatsService.db
+			.query<{ one: number }, []>(
+				"SELECT 1 as one FROM stats_daily WHERE key LIKE 'requests:%' LIMIT 1",
+			)
+			.get();
+		if (seeded) return;
+
+		const rows = StatsService.db
+			.query<{ day: string; endpoint: string; n: number }, []>(
+				"SELECT date(created_at, 'unixepoch') as day, endpoint, COUNT(*) as n FROM request_stats GROUP BY day, endpoint",
+			)
+			.all();
+		if (rows.length === 0) return;
+
+		const buckets = new Map<string, number>();
+		for (const row of rows) {
+			const module = moduleOf(row.endpoint);
+			if (!module) continue;
+			const key = `${row.day} ${module}`;
+			buckets.set(key, (buckets.get(key) ?? 0) + row.n);
+		}
+
+		StatsService.db.transaction(() => {
+			for (const [composite, n] of buckets) {
+				const [day, module] = composite.split(" ");
+				StatsService.incrementDailyStmt.run({
+					$day: day,
+					$key: `requests:${module}`,
+					$n: n,
+				});
+			}
+		})();
+	}
+
 	static record(entry: StatEntry) {
 		StatsService.buffer.push(entry);
 	}
@@ -292,7 +335,7 @@ export abstract class StatsService {
 		const downloads = StatsService.downloadBuffer.splice(0);
 		// One day value for the whole batch — a flush spanning a UTC midnight is
 		// a non-issue at a 10s flush interval.
-		const today = new Date().toISOString().slice(0, 10);
+		const today = dayString();
 
 		const run = StatsService.db.transaction(() => {
 			for (const item of entries) {
@@ -309,41 +352,46 @@ export abstract class StatsService {
 			for (const version of downloads) {
 				StatsService.insertDownloadStmt.run({ $version: version });
 			}
+			// Per-id counts live only in stats_daily — stats_meta keeps just the
+			// scalars, which can't be derived (request_stats is swept and has no
+			// per-row survivor).
+			const bucket = (prefix: string, items: string[]) => {
+				for (const [id, n] of StatsService.countBy(items)) {
+					StatsService.incrementDailyStmt.run({
+						$day: today,
+						$key: `${prefix}${id}`,
+						$n: n,
+					});
+				}
+			};
+
 			if (entries.length > 0) {
 				StatsService.incrementMetaStmt.run({
 					$key: "total_requests",
 					$n: entries.length,
 				});
+				// Unknown modules (health pings, scanner junk) are dropped, matching
+				// how getSummary's rollup treats them.
+				bucket(
+					"requests:",
+					entries
+						.map((e) => moduleOf(e.endpoint))
+						.filter((m): m is string => m !== null),
+				);
 			}
 			if (plays.length > 0) {
 				StatsService.incrementMetaStmt.run({
 					$key: "total_plays",
 					$n: plays.length,
 				});
-				for (const [recitationId, n] of StatsService.countBy(plays)) {
-					const key = `plays:${recitationId}`;
-					StatsService.incrementMetaStmt.run({ $key: key, $n: n });
-					StatsService.incrementDailyStmt.run({
-						$day: today,
-						$key: key,
-						$n: n,
-					});
-				}
+				bucket("plays:", plays);
 			}
 			if (downloads.length > 0) {
 				StatsService.incrementMetaStmt.run({
 					$key: "total_downloads",
 					$n: downloads.length,
 				});
-				for (const [version, n] of StatsService.countBy(downloads)) {
-					const key = `downloads:${version}`;
-					StatsService.incrementMetaStmt.run({ $key: key, $n: n });
-					StatsService.incrementDailyStmt.run({
-						$day: today,
-						$key: key,
-						$n: n,
-					});
-				}
+				bucket("downloads:", downloads);
 			}
 		});
 		run();
@@ -360,7 +408,8 @@ export abstract class StatsService {
 	}
 
 	// stats_meta and stats_daily are intentionally absent here — they're durable
-	// counters, not raw event rows, and are never swept.
+	// counters, not raw event rows, and are never swept. stats_daily in
+	// particular is what keeps history alive past this cutoff.
 	private static sweep() {
 		const cutoff = Math.floor(Date.now() / 1000) - RETENTION_DAYS * 86_400;
 		StatsService.db.run("DELETE FROM request_stats WHERE created_at < ?", [
@@ -529,66 +578,59 @@ export abstract class StatsService {
 		};
 	}
 
-	// Reads a `${prefix}{id}` meta-counter family — durable lifetime totals that
-	// survive the 90-day raw-row sweep.
-	private static getLifetimeMetaCounts(prefix: string): Map<string, number> {
-		const rows = StatsService.db
-			.query<MetaKVRow, [string]>(
-				"SELECT key, value FROM stats_meta WHERE key LIKE ? || '%'",
-			)
-			.all(prefix);
-
-		return new Map(rows.map((r) => [r.key.slice(prefix.length), r.value]));
-	}
-
-	// Sums a `${prefix}{id}` daily-bucket family over the trailing `days`
-	// calendar days (UTC, inclusive of today) — durable, unaffected by the
-	// 90-day raw-row sweep. Day strings sort lexicographically the same as
-	// chronologically, so a plain string >= cutoff bounds the window.
-	private static getDailyBucketCounts(
+	// Sums a `${prefix}{id}` daily-bucket family from `cutoffDay` onward, or over
+	// all time when omitted. stats_daily is never swept, so these totals are
+	// unaffected by the 90-day raw-row retention. Day strings sort
+	// lexicographically the same as chronologically, so a plain string
+	// comparison bounds the window.
+	private static getBucketCounts(
 		prefix: string,
-		days: number,
+		cutoffDay?: string,
 	): Map<string, number> {
-		const cutoffDay = new Date(Date.now() - days * 86_400_000)
-			.toISOString()
-			.slice(0, 10);
-		const rows = StatsService.db
-			.query<DailyBucketRow, [string, string]>(
-				"SELECT key, SUM(count) as total FROM stats_daily WHERE day >= ? AND key LIKE ? || '%' GROUP BY key",
-			)
-			.all(cutoffDay, prefix);
+		const rows = cutoffDay
+			? StatsService.db
+					.query<DailyBucketRow, [string, string]>(
+						"SELECT key, SUM(count) as total FROM stats_daily WHERE day >= ? AND key LIKE ? || '%' GROUP BY key",
+					)
+					.all(cutoffDay, prefix)
+			: StatsService.db
+					.query<DailyBucketRow, [string]>(
+						"SELECT key, SUM(count) as total FROM stats_daily WHERE key LIKE ? || '%' GROUP BY key",
+					)
+					.all(prefix);
 
 		return new Map(rows.map((r) => [r.key.slice(prefix.length), r.total]));
 	}
 
-	// Resolves a CounterPeriod to a per-id count map for one key family:
-	// "day" from raw rows (sub-day precision), "week"/"month"/"year" from
-	// durable daily buckets, "all" from durable lifetime meta counters.
+	// Resolves a CounterPeriod to a per-id count map for one key family. "day"
+	// reads raw rows for sub-day precision where a raw table exists; everything
+	// else sums durable daily buckets, with "all" spanning them entirely.
 	// Every id in `knownIds` is 0-filled, so callers get the full roster
 	// regardless of period and never have to backfill gaps themselves.
 	private static getCounterCounts(
 		prefix: string,
 		period: CounterPeriod,
 		knownIds: ReadonlySet<string>,
-		rawTable: "recitation_plays" | "quran_downloads",
-		rawIdColumn: "recitation_id" | "version",
+		raw?: {
+			table: "recitation_plays" | "quran_downloads";
+			idColumn: "recitation_id" | "version";
+		},
 	): [string, number][] {
 		let counts: Map<string, number>;
 		if (period === "all") {
-			counts = StatsService.getLifetimeMetaCounts(prefix);
-		} else if (period === "day") {
+			counts = StatsService.getBucketCounts(prefix);
+		} else if (period === "day" && raw) {
 			const since = Math.floor(Date.now() / 1000) - 24 * 3600;
 			const rows = StatsService.db
 				.query<{ id: string; n: number }, [number]>(
-					`SELECT ${rawIdColumn} as id, COUNT(*) as n FROM ${rawTable} WHERE created_at > ? GROUP BY ${rawIdColumn}`,
+					`SELECT ${raw.idColumn} as id, COUNT(*) as n FROM ${raw.table} WHERE created_at > ? GROUP BY ${raw.idColumn}`,
 				)
 				.all(since);
 			counts = new Map(rows.map((r) => [r.id, r.n]));
 		} else {
-			counts = StatsService.getDailyBucketCounts(
-				prefix,
-				COUNTER_PERIOD_DAYS[period],
-			);
+			// "day" without a raw table falls back to today's bucket.
+			const days = period === "day" ? 0 : COUNTER_PERIOD_DAYS[period];
+			counts = StatsService.getBucketCounts(prefix, dayString(days));
 		}
 
 		for (const id of knownIds) {
@@ -603,13 +645,25 @@ export abstract class StatsService {
 	): { recitationId: string; plays: number }[] {
 		StatsService.flush();
 
+		return StatsService.getCounterCounts("plays:", period, RECITATION_IDS, {
+			table: "recitation_plays",
+			idColumn: "recitation_id",
+		}).map(([recitationId, plays]) => ({ recitationId, plays }));
+	}
+
+	// Permanent per-module traffic history. Unlike plays/downloads there's no
+	// raw fallback for "day" — request_stats has endpoints, not modules — so
+	// every window reads the durable buckets.
+	static getRequestsByModule(
+		period: CounterPeriod,
+	): { module: string; requests: number }[] {
+		StatsService.flush();
+
 		return StatsService.getCounterCounts(
-			"plays:",
+			"requests:",
 			period,
-			RECITATION_IDS,
-			"recitation_plays",
-			"recitation_id",
-		).map(([recitationId, plays]) => ({ recitationId, plays }));
+			KNOWN_MODULES,
+		).map(([module, requests]) => ({ module, requests }));
 	}
 
 	static getQuranDownloads(
@@ -617,12 +671,9 @@ export abstract class StatsService {
 	): { version: string; downloads: number }[] {
 		StatsService.flush();
 
-		return StatsService.getCounterCounts(
-			"downloads:",
-			period,
-			EDITION_IDS,
-			"quran_downloads",
-			"version",
-		).map(([version, downloads]) => ({ version, downloads }));
+		return StatsService.getCounterCounts("downloads:", period, EDITION_IDS, {
+			table: "quran_downloads",
+			idColumn: "version",
+		}).map(([version, downloads]) => ({ version, downloads }));
 	}
 }
