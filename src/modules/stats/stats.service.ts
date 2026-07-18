@@ -63,11 +63,13 @@ const SWEEP_INTERVAL_MS = 3_600_000;
 const PERIOD_HOURS = { "24h": 24, "7d": 168, "30d": 720 } as const;
 export type Period = keyof typeof PERIOD_HOURS;
 
-// Counter windows — distinct from `Period` above (which stays 24h/7d/30d for
-// the request-latency summary and keeps its own semantics). "day" reads raw
-// rows where one exists (sub-day precision), otherwise today's bucket;
-// everything else sums durable daily buckets, immune to the 90-day raw sweep.
-const COUNTER_PERIOD_DAYS = { week: 7, month: 30, year: 365 } as const;
+// Counter windows — distinct from `Period` above, which stays 24h/7d/30d for
+// the request-latency summary and keeps its own rolling semantics. These are
+// calendar-day aligned (UTC) and read the durable daily buckets, so they are
+// immune to the 90-day raw-row sweep. "day" means today so far, not a rolling
+// 24 hours.
+// Trailing calendar days per window, inclusive of today.
+const COUNTER_PERIOD_DAYS = { day: 1, week: 7, month: 30, year: 365 } as const;
 export type CounterPeriod = "day" | "week" | "month" | "year" | "all";
 export const COUNTER_PERIODS: readonly CounterPeriod[] = [
 	"day",
@@ -409,7 +411,9 @@ export abstract class StatsService {
 
 	// stats_meta and stats_daily are intentionally absent here — they're durable
 	// counters, not raw event rows, and are never swept. stats_daily in
-	// particular is what keeps history alive past this cutoff.
+	// particular is what keeps history alive past this cutoff. The raw play/
+	// download tables are no longer read by any counter window; they remain as a
+	// 90-day audit trail and as the source the bucket backfill replays from.
 	private static sweep() {
 		const cutoff = Math.floor(Date.now() / 1000) - RETENTION_DAYS * 86_400;
 		StatsService.db.run("DELETE FROM request_stats WHERE created_at < ?", [
@@ -602,36 +606,25 @@ export abstract class StatsService {
 		return new Map(rows.map((r) => [r.key.slice(prefix.length), r.total]));
 	}
 
-	// Resolves a CounterPeriod to a per-id count map for one key family. "day"
-	// reads raw rows for sub-day precision where a raw table exists; everything
-	// else sums durable daily buckets, with "all" spanning them entirely.
-	// Every id in `knownIds` is 0-filled, so callers get the full roster
-	// regardless of period and never have to backfill gaps themselves.
+	// Resolves a CounterPeriod to a per-id count map for one key family. Every
+	// window reads the durable daily buckets: "day" is today's bucket, "all"
+	// spans them entirely, the rest are trailing calendar-day windows. Every id
+	// in `knownIds` is 0-filled, so callers get the full roster regardless of
+	// period and never have to backfill gaps themselves.
 	private static getCounterCounts(
 		prefix: string,
 		period: CounterPeriod,
 		knownIds: ReadonlySet<string>,
-		raw?: {
-			table: "recitation_plays" | "quran_downloads";
-			idColumn: "recitation_id" | "version";
-		},
 	): [string, number][] {
-		let counts: Map<string, number>;
-		if (period === "all") {
-			counts = StatsService.getBucketCounts(prefix);
-		} else if (period === "day" && raw) {
-			const since = Math.floor(Date.now() / 1000) - 24 * 3600;
-			const rows = StatsService.db
-				.query<{ id: string; n: number }, [number]>(
-					`SELECT ${raw.idColumn} as id, COUNT(*) as n FROM ${raw.table} WHERE created_at > ? GROUP BY ${raw.idColumn}`,
-				)
-				.all(since);
-			counts = new Map(rows.map((r) => [r.id, r.n]));
-		} else {
-			// "day" without a raw table falls back to today's bucket.
-			const days = period === "day" ? 0 : COUNTER_PERIOD_DAYS[period];
-			counts = StatsService.getBucketCounts(prefix, dayString(days));
-		}
+		const counts =
+			period === "all"
+				? StatsService.getBucketCounts(prefix)
+				: // -1 because the window includes today: a 7-day week is today plus
+					// the 6 days before it, not today plus 7.
+					StatsService.getBucketCounts(
+						prefix,
+						dayString(COUNTER_PERIOD_DAYS[period] - 1),
+					);
 
 		for (const id of knownIds) {
 			if (!counts.has(id)) counts.set(id, 0);
@@ -645,15 +638,12 @@ export abstract class StatsService {
 	): { recitationId: string; plays: number }[] {
 		StatsService.flush();
 
-		return StatsService.getCounterCounts("plays:", period, RECITATION_IDS, {
-			table: "recitation_plays",
-			idColumn: "recitation_id",
-		}).map(([recitationId, plays]) => ({ recitationId, plays }));
+		return StatsService.getCounterCounts("plays:", period, RECITATION_IDS).map(
+			([recitationId, plays]) => ({ recitationId, plays }),
+		);
 	}
 
-	// Permanent per-module traffic history. Unlike plays/downloads there's no
-	// raw fallback for "day" — request_stats has endpoints, not modules — so
-	// every window reads the durable buckets.
+	// Permanent per-module traffic history.
 	static getRequestsByModule(
 		period: CounterPeriod,
 	): { module: string; requests: number }[] {
@@ -671,9 +661,8 @@ export abstract class StatsService {
 	): { version: string; downloads: number }[] {
 		StatsService.flush();
 
-		return StatsService.getCounterCounts("downloads:", period, EDITION_IDS, {
-			table: "quran_downloads",
-			idColumn: "version",
-		}).map(([version, downloads]) => ({ version, downloads }));
+		return StatsService.getCounterCounts("downloads:", period, EDITION_IDS).map(
+			([version, downloads]) => ({ version, downloads }),
+		);
 	}
 }

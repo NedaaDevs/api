@@ -544,6 +544,44 @@ describe("counter window sums", () => {
 		);
 		expect(year?.downloads).toBe(19); // day0 + day3 + day20 + day100
 	});
+
+	test("windows are inclusive of today and exclude the day past the edge", () => {
+		const svc = StatsService as unknown as { db: Database };
+		const dayAgo = (n: number) =>
+			new Date(Date.now() - n * 86_400_000).toISOString().slice(0, 10);
+		const version = "window-edge-test-version";
+		const key = `downloads:${version}`;
+
+		// One bucket exactly on each window's last included day, one exactly
+		// past it. A 7-day week is today plus the 6 before it, so day 6 counts
+		// and day 7 does not.
+		for (const [daysAgo, count] of [
+			[0, 1],
+			[6, 2],
+			[7, 4],
+			[29, 8],
+			[30, 16],
+			[364, 32],
+			[365, 64],
+		] as const) {
+			svc.db.run("INSERT INTO stats_daily (day, key, count) VALUES (?, ?, ?)", [
+				dayAgo(daysAgo),
+				key,
+				count,
+			]);
+		}
+
+		const countFor = (period: "day" | "week" | "month" | "year" | "all") =>
+			StatsService.getQuranDownloads(period).find((d) => d.version === version)
+				?.downloads ?? 0;
+
+		// Powers of two, so each sum names exactly which buckets it included.
+		expect(countFor("day")).toBe(1); // day0
+		expect(countFor("week")).toBe(3); // day0+6, excludes day7
+		expect(countFor("month")).toBe(15); // day0+6+7+29, excludes day30
+		expect(countFor("year")).toBe(63); // day0+6+7+29+30+364, excludes day365
+		expect(countFor("all")).toBe(127); // every bucket
+	});
 });
 
 describe("module rollup", () => {
@@ -634,18 +672,24 @@ describe("recitation plays service", () => {
 
 describe("quran downloads service", () => {
 	test("recordDownload aggregates counts per version, ordered downloads desc", () => {
+		// Deltas, not absolutes: "day" reads today's cumulative bucket, which
+		// earlier tests in this file have already written to.
+		const countOf = (version: string) =>
+			StatsService.getQuranDownloads("day").find((d) => d.version === version)
+				?.downloads ?? 0;
+		const v1Before = countOf("v1");
+		const v2Before = countOf("v2");
+
 		StatsService.recordDownload("v1");
 		StatsService.recordDownload("v1");
 		StatsService.recordDownload("v2");
 		trackDownload("v1", 2);
 		trackDownload("v2", 1);
 
-		const downloads = StatsService.getQuranDownloads("day");
-		const v1 = downloads.find((d) => d.version === "v1");
-		const v2 = downloads.find((d) => d.version === "v2");
-		expect(v1?.downloads).toBe(2);
-		expect(v2?.downloads).toBe(1);
+		expect(countOf("v1")).toBe(v1Before + 2);
+		expect(countOf("v2")).toBe(v2Before + 1);
 
+		const downloads = StatsService.getQuranDownloads("day");
 		const v1Idx = downloads.findIndex((d) => d.version === "v1");
 		const v2Idx = downloads.findIndex((d) => d.version === "v2");
 		expect(v1Idx).toBeLessThan(v2Idx);

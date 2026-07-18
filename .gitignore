@@ -44,3 +44,7 @@ yarn-error.log*
 package-lock.json
 **/*.bun
 
+
+# App-written SQLite databases and generated output
+data/
+output
