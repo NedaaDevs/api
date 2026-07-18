@@ -111,8 +111,9 @@ describe("GET /v3/quran/manifest", () => {
 		const v4Dark = byId(body, "v4").darkPreviews;
 		expect(v4Dark.map((p: { page: number }) => p.page)).toEqual(PREVIEW_PAGES);
 		for (const p of v4Dark) {
-			// Preview keys are stamped with the publish version so CDN caches never go stale.
-			expect(p.url).toMatch(/\/previews\/\d{3}-dark-\d{4}-\d{2}-\d{2}\.\w+$/);
+			// Previews use stable convention keys (no publish stamp) so the app
+			// can construct them without the manifest.
+			expect(p.url).toMatch(/\/previews\/\d{3}-dark\.\w+$/);
 		}
 	});
 

@@ -599,19 +599,19 @@
 			"previews": [
 				{
 					"page": 1,
-					"url": "v1/1440/previews/001-2026-07-19.webp",
+					"url": "v1/1440/previews/001.webp",
 					"width": 1440,
 					"height": 3480
 				},
 				{
 					"page": 2,
-					"url": "v1/1440/previews/002-2026-07-19.webp",
+					"url": "v1/1440/previews/002.webp",
 					"width": 1440,
 					"height": 3480
 				},
 				{
 					"page": 302,
-					"url": "v1/1440/previews/302-2026-07-19.webp",
+					"url": "v1/1440/previews/302.webp",
 					"width": 1440,
 					"height": 3480
 				}
@@ -638,19 +638,19 @@
 			"previews": [
 				{
 					"page": 1,
-					"url": "v2/1440/previews/001-2026-07-19.webp",
+					"url": "v2/1440/previews/001.webp",
 					"width": 1440,
 					"height": 3480
 				},
 				{
 					"page": 2,
-					"url": "v2/1440/previews/002-2026-07-19.webp",
+					"url": "v2/1440/previews/002.webp",
 					"width": 1440,
 					"height": 3480
 				},
 				{
 					"page": 302,
-					"url": "v2/1440/previews/302-2026-07-19.webp",
+					"url": "v2/1440/previews/302.webp",
 					"width": 1440,
 					"height": 3480
 				}
@@ -660,19 +660,19 @@
 			"darkPreviews": [
 				{
 					"page": 1,
-					"url": "v4/1440/previews/001-dark-2026-07-19.webp",
+					"url": "v4/1440/previews/001-dark.webp",
 					"width": 1440,
 					"height": 3480
 				},
 				{
 					"page": 2,
-					"url": "v4/1440/previews/002-dark-2026-07-19.webp",
+					"url": "v4/1440/previews/002-dark.webp",
 					"width": 1440,
 					"height": 3480
 				},
 				{
 					"page": 302,
-					"url": "v4/1440/previews/302-dark-2026-07-19.png",
+					"url": "v4/1440/previews/302-dark.png",
 					"width": 1440,
 					"height": 3480
 				}
@@ -702,19 +702,19 @@
 			"previews": [
 				{
 					"page": 1,
-					"url": "v4/1440/previews/001-2026-07-19.webp",
+					"url": "v4/1440/previews/001.webp",
 					"width": 1440,
 					"height": 3480
 				},
 				{
 					"page": 2,
-					"url": "v4/1440/previews/002-2026-07-19.png",
+					"url": "v4/1440/previews/002.png",
 					"width": 1440,
 					"height": 3480
 				},
 				{
 					"page": 302,
-					"url": "v4/1440/previews/302-2026-07-19.png",
+					"url": "v4/1440/previews/302.png",
 					"width": 1440,
 					"height": 3480
 				}
@@ -735,30 +735,30 @@
 					"version": "2026-07-19",
 					"resolution": 1440,
 					"editions": ["v1"],
-					"url": "ornaments/ayah-marker/v1-2026-07-19.zip",
+					"url": "ornaments/ayah-marker/v1.zip",
 					"bytes": 46312,
-					"sha256": "47a42771b28253cceb148e590b0dd66cdf695adff02c4f769ed4b9f6384f9984",
-					"preview": "ornaments/ayah-marker/v1-preview-2026-07-19.png"
+					"sha256": "561a0c54eddb51f6e511d93bae0224f99fbb1b5cf460a8abdd4142a6fbcf7788",
+					"preview": "ornaments/ayah-marker/v1-preview.png"
 				},
 				{
 					"id": "v2",
 					"version": "2026-07-19",
 					"resolution": 1440,
 					"editions": ["v2"],
-					"url": "ornaments/ayah-marker/v2-2026-07-19.zip",
+					"url": "ornaments/ayah-marker/v2.zip",
 					"bytes": 44204,
-					"sha256": "349b7db795e42c1e33a8d444a07f7f4c04edbf0053a5de27ac7b6d12c1bf40c3",
-					"preview": "ornaments/ayah-marker/v2-preview-2026-07-19.png"
+					"sha256": "0d808919ace24253dfca75b37fc7c5e5e5344ed484659f889f63a71c5cc1a0c3",
+					"preview": "ornaments/ayah-marker/v2-preview.png"
 				},
 				{
 					"id": "v4",
 					"version": "2026-07-19",
 					"resolution": 1440,
 					"editions": ["v4"],
-					"url": "ornaments/ayah-marker/v4-2026-07-19.zip",
+					"url": "ornaments/ayah-marker/v4.zip",
 					"bytes": 19804,
-					"sha256": "4b774ed4a70db5d0fddbca5e377eeb21c82122dfcda35f35e90c012e94776417",
-					"preview": "ornaments/ayah-marker/v4-preview-2026-07-19.png"
+					"sha256": "23ec3b7ca34ba6c2c3569e25328122cf2d52e4a98b3c796fd401be52de348f9c",
+					"preview": "ornaments/ayah-marker/v4-preview.png"
 				}
 			]
 		},
@@ -778,10 +778,10 @@
 					"id": "classic",
 					"version": "2026-07-19",
 					"resolution": 1440,
-					"url": "ornaments/surah-frame/classic-2026-07-19.zip",
+					"url": "ornaments/surah-frame/classic.zip",
 					"bytes": 50944,
-					"sha256": "88e053e09016094a5d7a9e07638e1bd3625894738859ed9ac6cdaabce95911de",
-					"preview": "ornaments/surah-frame/classic-preview-2026-07-19.png"
+					"sha256": "c4f35b8272cbae0125118986206141c53e20bbd17c1c9488ecd857bdeb8746e3",
+					"preview": "ornaments/surah-frame/classic-preview.png"
 				}
 			]
 		}
