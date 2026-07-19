@@ -21,6 +21,18 @@ const PUBLISHED_IDS = new Set(
 	),
 );
 
+// Display names for the public top list. Consumers get localised names rather
+// than having to reverse-engineer them from the slug — the names live here, so
+// this is where they should be resolved.
+const RECITATION_META = new Map(
+	audio.reciters.flatMap((r) =>
+		r.recitations.map((rec) => [
+			rec.id,
+			{ nameEn: r.nameEnglish, nameAr: r.nameArabic, style: rec.style },
+		]),
+	),
+);
+
 const buildCatalog = () => {
 	let reciters = 0;
 	let recitations = 0;
@@ -90,7 +102,18 @@ const buildPayload = () => {
 		.filter(([recitationId, w]) => w.all > 0 && PUBLISHED_IDS.has(recitationId))
 		.sort((a, b) => b[1].all - a[1].all)
 		.slice(0, 5)
-		.map(([recitationId, plays]) => ({ recitationId, plays }));
+		.map(([recitationId, plays]) => {
+			const meta = RECITATION_META.get(recitationId);
+			return {
+				recitationId,
+				// Falling back to the slug keeps the field present even for an id
+				// that outlives its catalogue entry.
+				nameEn: meta?.nameEn ?? recitationId,
+				nameAr: meta?.nameAr ?? recitationId,
+				style: meta?.style ?? "",
+				plays,
+			};
+		});
 
 	// All editions 0-filled (via the "all" window) — the edition set is tiny
 	// and fixed.
