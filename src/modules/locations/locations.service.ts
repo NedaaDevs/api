@@ -1,6 +1,10 @@
 import { env } from "@/config/env";
 import { AppError, CODES } from "@/shared/errors";
-import { createCacheKey, locationCache } from "@/shared/services/cache";
+import {
+	bucketCoordinates,
+	createCacheKey,
+	locationCache,
+} from "@/shared/services/cache";
 
 interface ReverseGeocodeParams {
 	lat: number;
@@ -29,8 +33,10 @@ export abstract class LocationsService {
 	static async reverseGeocode(
 		params: ReverseGeocodeParams,
 	): Promise<ReverseGeocodeResult> {
+		const [lat, lng] = bucketCoordinates(params.lat, params.lng);
+
 		// Check cache
-		const cacheKey = createCacheKey("location", params.lat, params.lng, {
+		const cacheKey = createCacheKey("location", lat, lng, {
 			locale: params.locale,
 		});
 		const cached = locationCache.get(cacheKey);
@@ -38,8 +44,8 @@ export abstract class LocationsService {
 
 		// Call BigDataCloud API
 		const url = new URL(`${env.BDC_API_URL}${LocationsService.API_PATH}`);
-		url.searchParams.set("latitude", String(params.lat));
-		url.searchParams.set("longitude", String(params.lng));
+		url.searchParams.set("latitude", String(lat));
+		url.searchParams.set("longitude", String(lng));
 		url.searchParams.set("localityLanguage", params.locale);
 		url.searchParams.set("key", env.BDC_API_KEY);
 

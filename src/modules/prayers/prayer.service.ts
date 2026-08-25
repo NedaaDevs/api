@@ -9,7 +9,11 @@ import {
 	listAdapters,
 } from "@/modules/prayers/adapters/registry";
 
-import { createCacheKey, prayerTimesCache } from "@/shared/services/cache";
+import {
+	bucketCoordinates,
+	createCacheKey,
+	prayerTimesCache,
+} from "@/shared/services/cache";
 
 // biome-ignore lint/complexity/noStaticOnlyClass: <explanation>
 export abstract class PrayersService {
@@ -20,8 +24,11 @@ export abstract class PrayersService {
 	static async getPrayerTimes(
 		params: PrayerTimesParams,
 	): Promise<PrayerTimesResult> {
+		const [lat, lng] = bucketCoordinates(params.lat, params.lng);
+		const bucketed = { ...params, lat, lng };
+
 		// Cache key WITHOUT month - always cache full year
-		const cacheKey = createCacheKey("prayers", params.lat, params.lng, {
+		const cacheKey = createCacheKey("prayers", lat, lng, {
 			provider: params.provider ?? "aladhan",
 			year: params.year ?? new Date().getFullYear(),
 			...params.options,
@@ -34,7 +41,7 @@ export abstract class PrayersService {
 				? getAdapter(params.provider)
 				: getDefaultAdapter();
 
-			result = await adapter.getPrayerTimes(params);
+			result = await adapter.getPrayerTimes(bucketed);
 			prayerTimesCache.set(cacheKey, result);
 		}
 
