@@ -50,6 +50,10 @@ const VALID_METHODS = [
  */
 const VALID_SHAFAQ = ["general", "ahmer", "abyad"] as const;
 
+// Aladhan meta reports these as names; requests and the app use the numbers
+const SCHOOL_BY_NAME = { STANDARD: 0, HANAFI: 1 } as const;
+const MIDNIGHT_MODE_BY_NAME = { STANDARD: 0, JAFARI: 1 } as const;
+
 export const meta: AdapterMeta = {
 	id: "aladhan",
 	name: "Aladhan",
@@ -193,7 +197,8 @@ export default class AladhanAdapter extends PrayerTimesAdapter {
 	): PrayerTimesResult {
 		const data = response.data;
 		const firstMonth = Object.keys(data)[0];
-		const timezone = data[firstMonth][0].meta.timezone;
+		const firstMeta = data[firstMonth][0].meta;
+		const timezone = firstMeta.timezone;
 		const months: MonthlyPrayerTimes = {};
 		for (const [month, days] of Object.entries(data)) {
 			months[month] = days.map((day) => ({
@@ -219,6 +224,21 @@ export default class AladhanAdapter extends PrayerTimesAdapter {
 			coordinates: { lat: params.lat, lng: params.lng },
 			provider: this.meta.id,
 			months,
+			applied: this.mapApplied(firstMeta),
+		};
+	}
+
+	private mapApplied(meta: AladhanDayData["meta"]): Record<string, unknown> {
+		return {
+			method: meta.method.id,
+			madhab: SCHOOL_BY_NAME[meta.school],
+			midnightMode: MIDNIGHT_MODE_BY_NAME[meta.midnightMode],
+			tune: Object.fromEntries(
+				Object.entries(meta.offset).map(([key, value]) => [
+					key.toLowerCase(),
+					Number(value),
+				]),
+			),
 		};
 	}
 }
@@ -242,6 +262,11 @@ interface AladhanDayData {
 	};
 	meta: {
 		timezone: string;
+		method: { id: number };
+		school: keyof typeof SCHOOL_BY_NAME;
+		midnightMode: keyof typeof MIDNIGHT_MODE_BY_NAME;
+		// Numbers when no tune is sent, numeric strings when it is
+		offset: Record<string, number | string>;
 	};
 }
 

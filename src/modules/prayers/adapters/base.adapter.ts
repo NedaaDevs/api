@@ -58,6 +58,7 @@ export interface PrayerTimesResult {
 	coordinates: { lat: number; lng: number };
 	provider: string;
 	months: MonthlyPrayerTimes;
+	applied?: Record<string, unknown>;
 }
 
 export abstract class PrayerTimesAdapter {

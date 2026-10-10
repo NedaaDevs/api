@@ -47,6 +47,8 @@ export const PrayerTimesResponse = t.Object({
 	}),
 	provider: t.String(),
 	months: t.Record(t.String(), t.Array(DayPrayerTimesSchema)),
+	// Settings the provider used, keyed by the app's names for that provider
+	applied: t.Optional(t.Record(t.String(), t.Unknown())),
 });
 
 // Single adapter info
