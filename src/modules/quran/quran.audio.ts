@@ -341,6 +341,23 @@ const AUDIO_IDENTITY: ReciterIdentity[] = [
 		],
 	},
 	{
+		id: "maher-al-muaiqly",
+		nameArabic: "ماهر المعيقلي",
+		nameEnglish: "Maher Al-Muaiqly",
+		recitations: [
+			{
+				id: "maher-al-mu-aiqly-murattal-hafs-948",
+				style: "Murattal",
+				riwayah: "hafs",
+				granularity: "ayah",
+				basePath: "audio/maher-al-mu-aiqly-murattal-hafs-948/",
+				fileFormat: "mp3",
+				ayahCount: 6236,
+				published: true,
+			},
+		],
+	},
+	{
 		id: "muhammad-ayyoob",
 		nameArabic: "محمد أيوب",
 		nameEnglish: "Muhammad Ayyoob",
